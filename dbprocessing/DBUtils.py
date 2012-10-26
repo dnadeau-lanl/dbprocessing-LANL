@@ -379,16 +379,26 @@ class DBUtils(object):
         except ValueError:
             raise(DBNoData("No Item ID={0} found".format(item)))
 
-    def _processqueueGetAll(self):
+    def _processqueueGetAll(self, version_bump=None):
         """
         return the entire contents of the process queue
         """
-        try:
-            pqdata = zip(*self.session.query(self.Processqueue.file_id).all())[0]
-        except IndexError:
-            pqdata = self.session.query(self.Processqueue.file_id).all()
-        DBlogging.dblogger.debug( "Entire Processqueue was read: {0} elements returned".format(len(pqdata)))
-        return pqdata
+        if version_bump is None:
+            try:
+                pqdata = zip(*self.session.query(self.Processqueue.file_id).all())[0]
+            except IndexError:
+                pqdata = self.session.query(self.Processqueue.file_id).all()
+            ans = pqdata
+        else:
+            try:
+                pqdata1 = zip(*self.session.query(self.Processqueue.file_id).all())[0]
+                pqdata2 = zip(*self.session.query(self.Processqueue.version_bump).all())[0]
+            except IndexError:
+                pqdata1 = self.session.query(self.Processqueue.file_id).all()
+                pqdata2 = self.session.query(self.Processqueue.version_bump).all()
+            ans = zip(pqdata1, pqdata2)
+        DBlogging.dblogger.debug( "Entire Processqueue was read: {0} elements returned".format(len(ans)))
+        return ans
 
     def _processqueuePush(self, fileid, version_bump=None):
         """
@@ -490,28 +500,33 @@ class DBUtils(object):
         """
         # TODO this might break with weekly input files
         DBlogging.dblogger.debug("Entering in queueClean(), there are {0} entries".format(self.Processqueue.len()))
-        pqdata = self.Processqueue.getAll()
+        pqdata = self.Processqueue.getAll(version_bump=True)
         if len(pqdata) <= 1: # can't clean just one (or zero) entries
             return
 
         ans = [] # this will hold the unique file_id's to put back on the queue
 
-        file_entries = [self.getEntry('File', val) for val in pqdata]
+        file_entries = [self.getEntry('File', val[0]) for val in pqdata]
         # setup a tuple of (product_id, utc_file_date)
         dat = [(val.product_id, val.utc_file_date) for val in file_entries]
         # now we want just the unique enetries
         uniq_dat = list(set(dat))
         # step through the uniq ones and if there is more than one drop
         for uval in uniq_dat:
-            # should be albe t do a bailout here, TODO
+            # should be able to do a bailout here, TODO
             # create a new list of just those
             tmp = [val for val in file_entries if val.product_id == uval[0] and val.utc_file_date == uval[1]]
             mx = max(tmp, key=lambda x: Version.Version(x.interface_version, x.quality_version, x.revision_version))
-            ans.append(mx.file_id)
+            ## have to go through and add back any version_bump info
+            vb = self.session.query(self.Processqueue.version_bump).filter_by(file_id=mx.file_id).all()[0]
+            ans.append( (mx.file_id, vb)  )
 
         ## now we have a list of just the unique file_id's
+
         self.Processqueue.flush()
-        self.Processqueue.push(ans)
+        #        self.Processqueue.push(ans)
+        for v in ans:
+            self.Processqueue.push(*v)
         DBlogging.dblogger.debug("Done in queueClean(), there are {0} entries left".format(self.Processqueue.len()))
 
     def _purgeFileFromDB(self, filename=None, recursive=False):
@@ -1340,7 +1355,8 @@ class DBUtils(object):
 
     def getFiles_product_utc_file_date(self, product_id, date):
         """
-        given a product id and a utc_file_date return all the files that match [(file_id, Version, product_id, product_id, utc_file_date), ]
+        given a product id and a utc_file_date return all the files that match
+        [(file_id, Version, product_id, utc_file_date), ]
         """
         DBlogging.dblogger.debug( "Entered getFiles_product_utc_file_date():  product_id: {0} date: {1}".format(product_id, date) )
         if isinstance(date, datetime.datetime):
@@ -1570,18 +1586,6 @@ class DBUtils(object):
         path = os.path.join(basedir, 'errors/')
         return path
 
-    def getFilefilelink_byresult(self, file_id):
-        """
-        given a file_id return all the other file_ids that went into making it
-        """
-        DBlogging.dblogger.debug("Entered getFilefilelink_byresult: file_id={0}".format(file_id))
-        f_id = self.getFileID(file_id)
-        sq = self.session.query(self.Filefilelink.source_file).filter_by(resulting_file = f_id).all()
-        try:
-            return zip(*sq)[0]
-        except IndexError:
-            return None
-
     def getFilecodelink_byfile(self, file_id):
         """
         given a file_id return the code_id associated with it, or None
@@ -1618,11 +1622,14 @@ class DBUtils(object):
             m_id = sq[0].mission_id
         return m_id
 
-    def getNewestFiles(self):
+    def getNewestFiles(self, product=None):
         """
         for the current mission get a tuple of all file ids that are marked newest version
         """
-        sq = self.session.query(self.File.file_id).filter_by(newest_version = True).all()
+        if product is None:
+            sq = self.session.query(self.File.file_id).filter_by(newest_version = True).all()
+        else:
+            sq = self.session.query(self.File.file_id).filter_by(newest_version = True).filter_by(product = product).all()
         sq = zip(*sq)[0]
         return sq
 
@@ -1833,6 +1840,8 @@ class DBUtils(object):
         """
         file_id = self.getFileID(file_id)
         f_ids = self.session.query(self.Filefilelink.source_file).filter_by(resulting_file=file_id).all()
+        if not f_ids:
+            return []
         f_ids = zip(*f_ids)[0]
         files = [self.getEntry('File', val) for val in f_ids]
         if not id_only:
