@@ -131,6 +131,12 @@ class DBUtils(object):
                 else:
                     engine = db_var.engine
 
+            else: # assume we got a filename and use that
+                if not os.path.isfile(os.path.expanduser(self.mission)):
+                    raise(ValueError('Bad mission of db file specified'))
+                engine = sqlalchemy.create_engine('sqlite:///' + os.path.expanduser(self.mission), echo=False)
+                self.mission = 'rbsp'
+
             DBlogging.dblogger.info("Database Connection opened: {0}".format(str(engine)))
 
         except DBError:
