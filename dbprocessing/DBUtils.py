@@ -130,6 +130,11 @@ class DBUtils(object):
                 else:
                     engine = db_var.engine
 
+            elif self.mission == 'rbsp':
+                filename = os.path.expanduser(os.path.join('~ectsoc', 'RBSP_processing.sqlite'))
+                engine = sqlalchemy.create_engine('sqlite:///' + filename, echo=False)
+                self.mission = 'rbsp'
+
             else: # assume we got a filename and use that
                 if not os.path.isfile(os.path.expanduser(self.mission)):
                     raise(ValueError("DB file specified doesn't exist"))
@@ -427,7 +432,10 @@ class DBUtils(object):
         fileid = self.getFileID(fileid)
         pq1 = self.Processqueue()
         pq1.file_id = fileid
-        pq1.version_bump = version_bump
+        if isinstance(version_bump, (list, tuple)):
+            pq1.version_bump = version_bump[0]
+        else:
+            pq1.version_bump = version_bump
         self.session.add(pq1)
         DBlogging.dblogger.info( "File added to process queue {0}:{1}".format(fileid, self.getEntry('File', fileid).filename ) )
         self._commitDB()
@@ -1130,9 +1138,6 @@ class DBUtils(object):
         @ return: file_id of the newly inserted file
         @rtype: long
         """
-        d1 = self.File()
-
-        self._createTableObjects()
         d1 = self.File()
         d1.filename = filename
         d1.utc_file_date = utc_file_date
