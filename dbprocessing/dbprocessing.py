@@ -303,12 +303,17 @@ class ProcessQueue(object):
             self.runme_list.append(runme)
 
 
-    def onRun(self):
+    def onStartup(self):
         """
-        Processes can be defined as output timebase "RUN" which means to run
+        Processes can be defined as output timebase "STARTUP" which means to run
         them each time to processing chain is run
         """
-        proc = self.dbu.getAllProcesses(timebase='RUN')
+        proc = self.dbu.getAllProcesses(timebase='STARTUP')
+        #TODO just going to run there here for now.  This shold move to runMe
+        for p in proc:  # run them all
+            code = self.dbu.getEntry('Code', p.process_id)
+            print code.codename
+
         # need to call a "runner" with these processes
         ######
         ##
@@ -361,7 +366,11 @@ class ProcessQueue(object):
         f_ids = [val.file_id for val in files]
         parents = [self.dbu.getFileParents(val, id_only=True) for val in f_ids]
         filesToReprocess = set(Utils.flatten(parents))
-        self.dbu.Processqueue.push(filesToReprocess, incVersion)
+        for f in filesToReprocess:
+            try:
+                self.dbu.Processqueue.push(f, incVersion)
+            except filesToReprocess:
+                pass
         return len(filesToReprocess)
 
     # TODO can functools.partial help here?

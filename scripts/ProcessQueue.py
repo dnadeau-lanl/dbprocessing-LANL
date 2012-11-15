@@ -1,7 +1,10 @@
 #!/usr/bin/env python2.6
 
+import datetime
+import os
 from optparse import OptionParser
 import traceback
+import subprocess
 
 from dbprocessing import DBlogging, dbprocessing
 from dbprocessing.runMe import ProcessException
@@ -9,15 +12,6 @@ from dbprocessing import runMe
 
 __version__ = '2.0.3'
 
-def usage():
-    """
-    print the usage messag out
-    """
-    print "Usage: {0} [-i] [-p] [-m Test]".format("ProcessQueue")
-    print "   -i -> import"
-    print "   -p -> process"
-    print "   -m -> selects mission"
-    return
 
 if __name__ == "__main__":
     usage = \
@@ -27,7 +21,7 @@ if __name__ == "__main__":
         -p -> process
         -m -> selects mission
     """
-    parser = OptionParser(usage)
+    parser = OptionParser(usage=usage)
     parser.add_option("-i", "", dest="i", action="store_true",
                       help="ingest mode", default=False)
     parser.add_option("-p", "", dest="p", action="store_true",
@@ -62,7 +56,13 @@ if __name__ == "__main__":
     # start logging as a lock
     pq.dbu._startLogging()
 
+
     if options.i: # import selected
+        # run the code to copy data to incoming
+        ## TODO this should proably move into a STARTUP process but its tough since
+        ##   there is not a output product
+        command_line = ['nice', '-n 2', '/u/ectsoc/dbUtils/dataToIncoming.py']
+        subprocess.check_call(command_line)
         try:
             start_len = pq.dbu.Processqueue.len()
             pq.checkIncoming()
@@ -85,6 +85,7 @@ if __name__ == "__main__":
         print("Import finished: {0} files added".format(pq.dbu.Processqueue.len()-start_len))
 
     if options.p: # process selected
+        number_proc = 0
         try:
             DBlogging.dblogger.debug("pq.dbu.Processqueue.len(): {0}".format(pq.dbu.Processqueue.len()))
             # this loop does everything, both make the runMe objects and then
@@ -93,6 +94,7 @@ if __name__ == "__main__":
                 pq.dbu.Processqueue.clean()  # get rid of duplicates
                 # this loop makes all the runMe objects for all the files in the processqueue
                 while pq.dbu.Processqueue.len() > 0:
+                    number_proc += pq.dbu.Processqueue.len()
                     file_id = pq.dbu.Processqueue.get(version_bump=True)
                     DBlogging.dblogger.debug("popped {0} from pq.dbu.Processqueue.get()".format(file_id))
                     if file_id is None:
@@ -112,8 +114,9 @@ if __name__ == "__main__":
                 # sort them so that we run the oldest date first, cuts down on reprocess
                 pq.runme_list = sorted(pq.runme_list, key=lambda val: val.utc_file_date)
                 print len(pq.runme_list), pq.runme_list
-                for v in pq.runme_list:
+                for ii, v in enumerate(pq.runme_list):
                     ## TODO if one wanted to add smarts do it here, like running in parrallel
+                    DBlogging.dblogger.info("Running {0} of {1}".format(ii+1, len(pq.runme_list)))
                     runMe.runner(v)
 
         except:
@@ -130,3 +133,13 @@ if __name__ == "__main__":
         else:
             pq.dbu._stopLogging('Nominal Exit')
         pq.dbu._closeDB()
+
+        ## at the end of processing create a weekly report
+        ## do this for the last 7 days if we did anything
+        if number_proc > 0:
+            today = datetime.datetime.utcnow().date()
+            prev = (today - datetime.timedelta(days=7))
+            outname = os.path.expanduser(os.path.join('~', 'dbprocessing_logs', 'SOCreport_{0}.html'.format(datetime.datetime.utcnow().replace(microsecond=0).isoformat())))
+            command_line = ['nice', '-n 2', '/u/ectsoc/dbUtils/weeklyReport.py', os.path.expanduser(os.path.join('~', 'dbprocessing_logs')), prev.strftime('%Y-%m-%d'), today.strftime('%Y-%m-%d'), outname]
+            subprocess.check_call(command_line)
+

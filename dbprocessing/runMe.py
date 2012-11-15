@@ -80,7 +80,7 @@ def runner(runme):
         subprocess.check_call(' '.join(cmdline), shell=True, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError:
         # TODO figure out how to print what the return code was
-        DBlogging.dblogger.error("Command returned a non-zero return code")
+        DBlogging.dblogger.error("Command returned a non-zero return code: {0}".format(' '.join(cmdline)))
         # assume the file is bad and move it to error
         runme.moveToError(runme.filename)
         rm_tempdir(tempdir) # clean up
@@ -198,6 +198,7 @@ class runMe(object):
         not process with that name
         """
         try:
+            DBlogging.dblogger.debug("Filename: {0} check in db".format(self.filename))
             f_id_db = self.dbu.getFileID(self.filename)
             DBlogging.dblogger.debug("Filename: {0} is in the DB, have to make different version".format(self.filename))
             return f_id_db
