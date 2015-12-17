@@ -153,7 +153,7 @@ class DBUtils(object):
             self.dbIsOpen = True
             if verbose: print("DB is open: %s" % (engine))
             return
-        except Exception, msg:
+        except Exception as msg:
             raise(DBError('Error opening database: %s'% (msg)))
 
     def _createTableObjects(self, verbose = False):
@@ -180,7 +180,7 @@ class DBUtils(object):
 ##     missions = Table('missions', metadata, autoload=True)
 ##     mapper(Missions, missions)
         for val in table_dict:
-            if verbose: print val
+            if verbose: print(val)
             if not hasattr(self, val):  # then make it
                 myclass = type(str(val), (object,), dict())
                 tableobj = Table(table_dict[val], self.metadata, autoload=True)
@@ -692,7 +692,7 @@ class DBUtils(object):
             p_ids =  map(attrgetter('product_id'), p_ids)
             ids = []
             for p in p_ids:
-                print p
+                print(p)
                 ids.extend(self.getFilesByProduct(p, newest_version=True))
             ids =  map(attrgetter('product_id'), ids)
         return ids
@@ -1744,7 +1744,7 @@ class DBUtils(object):
             p_ids =  map(attrgetter('product_id'), p_ids)
             ids = []
             for p in p_ids:
-                print p
+                print(p)
                 ids.extend(self.getFilesByProduct(p, newest_version=True))
             ids =  map(attrgetter('product_id'), ids)
         return ids
