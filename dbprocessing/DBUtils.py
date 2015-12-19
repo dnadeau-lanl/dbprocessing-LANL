@@ -117,8 +117,7 @@ class DBUtils(object):
         expected = '0.7'
         if version[0:len(expected)] != expected:
             raise DBError(
-                    "SQLAlchemy version %s was not expected, expected %s.x" %
-                    (version, expected))
+                    "SQLAlchemy version {0} was not expected, expected {1}.x".format(version, expected))
         return True
 
     def _patchProcessQueue(self):
@@ -170,7 +169,7 @@ class DBUtils(object):
             if verbose: print("DB is open: {0}".format(engine))
             return
         except Exception, msg:
-            raise (DBError('Error opening database: %s' % (msg)))
+            raise (DBError('Error opening database: {0}'.format(msg)))
 
     def _createTableObjects(self, verbose=False):
         """
@@ -204,7 +203,7 @@ class DBUtils(object):
             print("{0}:{1} {2}:{3}".format(myclass, type(myclass),
                                            tableobj, type(tableobj)))
             if verbose: print("Class {0} created".format(val))
-            if verbose: DBlogging.dblogger.debug("Class %s created" % (val))
+            if verbose: DBlogging.dblogger.debug("Class {0} created".format(val))
 
     #####################################
     ####  Do processing and input to DB
@@ -245,7 +244,7 @@ class DBUtils(object):
             val.currently_processing = False
             val.processing_end = datetime.datetime.utcnow()
             val.comment = 'Overridden:' + comment + ':' + __version__
-            DBlogging.dblogger.error("Logging lock overridden: %s" % ('Overridden:' + comment + ':' + __version__))
+            DBlogging.dblogger.error("Logging lock overridden: {0}".format('Overridden:' + comment + ':' + __version__))
             self.session.add(val)
         if sq2:
             self._commitDB()
@@ -339,7 +338,7 @@ class DBUtils(object):
         self.__p1.comment = comment + ':' + __version__
         self.session.add(self.__p1)
         self._commitDB()
-        DBlogging.dblogger.info("Logging stopped: %s comment '%s' " % (self.__p1.processing_end, self.__p1.comment))
+        DBlogging.dblogger.info("Logging stopped: {0} comment '{1}' ".format(self.__p1.processing_end, self.__p1.comment))
         del self.__p1
 
     def _checkDiskForFile(self, file_id, fix=False):
@@ -710,7 +709,7 @@ class DBUtils(object):
             p_ids = map(attrgetter('product_id'), p_ids)
             ids = []
             for p in p_ids:
-                print p
+                print(p)
                 ids.extend(self.getFilesByProduct(p, newest_version=True))
             ids = map(attrgetter('product_id'), ids)
         return ids
@@ -1506,7 +1505,7 @@ class DBUtils(object):
             if sq is not None:
                 return sq.file_id
             else:  # no file_id found
-                raise (DBNoData("No filename %s found in the DB" % (filename)))
+                raise (DBNoData("No filename {0} found in the DB".format(filename)))
 
     def getCodeID(self, codename):
         """
@@ -1789,7 +1788,7 @@ class DBUtils(object):
                 except TypeError:
                     return sq[0].product_id
             except IndexError:  # no file_id found
-                raise (DBNoData("No product_name %s found in the DB" % (product_name)))
+                raise (DBNoData('No product_name {0:s} found in the DB'.format(product_name)))
 
     def getSatelliteID(self,
                        sat_name):
