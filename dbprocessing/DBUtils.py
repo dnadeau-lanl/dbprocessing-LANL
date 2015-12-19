@@ -22,11 +22,11 @@ except ImportError:
 from sqlalchemy.sql import func
 from sqlalchemy import and_
 
-from Diskfile import calcDigest, DigestError
-import DBlogging
-import DBStrings
-import Version
-import Utils
+from . import Diskfile  # from Diskfile import calcDigest, DigestError
+from . import DBlogging
+from . import DBStrings
+from . import Version
+from . import Utils
 
 ## This goes in the processing comment field in the DB, do update it
 __version__ = '2.0.3'
@@ -168,7 +168,7 @@ class DBUtils(object):
             self.dbIsOpen = True
             if verbose: print("DB is open: {0}".format(engine))
             return
-        except Exception, msg:
+        except Exception as msg:
             raise (DBError('Error opening database: {0}'.format(msg)))
 
     def _createTableObjects(self, verbose=False):
@@ -200,8 +200,8 @@ class DBUtils(object):
             tableobj = Table(table_dict[val], self.metadata, autoload=True)
             mapper(myclass, tableobj)
             setattr(self, str(val), myclass)
-            print("{0}:{1} {2}:{3}".format(myclass, type(myclass),
-                                           tableobj, type(tableobj)))
+            # print("{0}:{1} {2}:{3}".format(myclass, type(myclass),
+            #                                tableobj, type(tableobj)))
             if verbose: print("Class {0} created".format(val))
             if verbose: DBlogging.dblogger.debug("Class {0} created".format(val))
 
@@ -258,7 +258,7 @@ class DBUtils(object):
         if self._currentlyProcessing():
             raise (DBError('A Currently Processing flag is still set, cannot process now'))
         # save this class instance so that we can finish the logging later
-        assert isinstance(self.Mission, str)
+        assert isinstance(self.Mission, sqlalchemy.sql.schema.Table)
         self.__p1 = self._addLogging(True,
                                      datetime.datetime.utcnow(),
                                      ## for now there is one mission only per DB
@@ -338,7 +338,8 @@ class DBUtils(object):
         self.__p1.comment = comment + ':' + __version__
         self.session.add(self.__p1)
         self._commitDB()
-        DBlogging.dblogger.info("Logging stopped: {0} comment '{1}' ".format(self.__p1.processing_end, self.__p1.comment))
+        DBlogging.dblogger.info(
+                "Logging stopped: {0} comment '{1}' ".format(self.__p1.processing_end, self.__p1.comment))
         del self.__p1
 
     def _checkDiskForFile(self, file_id, fix=False):
@@ -2001,7 +2002,7 @@ class DBUtils(object):
         given a file id or name check the db checksum and the file checksum
         """
         db_sha = self.getEntry('File', file_id).shasum
-        disk_sha = calcDigest(self.getFileFullPath(file_id))
+        disk_sha = Diskfile.calcDigest(self.getFileFullPath(file_id))
         if str(disk_sha) == str(db_sha):
             return True
         else:
@@ -2018,7 +2019,7 @@ class DBUtils(object):
             try:
                 if not self.checkFileSMA(f):
                     bad_list.append((f, '(100) bad checksum'))
-            except DigestError:
+            except Diskfile.DigestError:
                 bad_list.append((f, '(200) file not found'))
         return bad_list
 

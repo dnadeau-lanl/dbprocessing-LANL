@@ -1,12 +1,11 @@
 #!/usr/bin/env python2.6
 # -*- coding: utf-8 -*-
 
-import glob
 import hashlib
 import os
 import os.path
 
-import DBlogging
+from . import DBlogging
 
 __version__ = '2.0.3'
 
@@ -18,6 +17,7 @@ class ReadError(Exception):
 
     `Author:` Brian Larsen, LANL
     """
+
     def __init__(self, *params):
         super(ReadError, self).__init__(*params)
         DBlogging.dblogger.error("ReadError raised")
@@ -29,6 +29,7 @@ class FilenameError(Exception):
 
     `Author:` Brian Larsen, LANL
     """
+
     def __init__(self, *params):
         super(FilenameError, self).__init__(*params)
         DBlogging.dblogger.error("FilenameError raised")
@@ -40,17 +41,19 @@ class WriteError(Exception):
 
     `Author:` Brian Larsen, LANL
     """
+
     def __init__(self, *params):
         super(WriteError, self).__init__(*params)
         DBlogging.dblogger.error("WriteError raised")
 
-        
+
 class InputError(Exception):
     """
     Exception that input is bad to the DiskFile class
 
     `Author:` Brian Larsen, LANL
     """
+
     def __init__(self, *params):
         super(InputError, self).__init__(*params)
         DBlogging.dblogger.error("InputError raised")
@@ -68,6 +71,7 @@ class DigestError(Exception):
     `Author:` Brian Larsen, LANL
 
     """
+
     def __init__(self, *params):
         super(DigestError, self).__init__(*params)
         DBlogging.dblogger.error("DigestError raised")
@@ -112,11 +116,10 @@ class Diskfile(object):
         except ReadError:
             print("!!!No read access on {0}!!!".format(self.infile))
 
-
         self.path = os.path.dirname(self.infile)
         self.filename = os.path.basename(self.infile)
 
-        self.params = {}
+        self.params = { }
         self.params['filename'] = self.filename
         self.params['utc_file_date'] = None
         self.params['utc_start_time'] = None
@@ -143,7 +146,6 @@ class Diskfile(object):
         self.dbu = dbu
         self.mission = self.dbu.mission  # keeps track if we found a parsematch
 
-
     def __repr__(self):
         return "<Diskfile.Diskfile object: {0}>".format(self.infile)
 
@@ -156,20 +158,23 @@ class Diskfile(object):
         # need both read and write access
         self.READ_ACCESS = os.access(self.infile, os.R_OK)
         if not self.READ_ACCESS:
-#            # TODO this is a pngwalk hack
-#            glb = glob.glob(self.infile + '*.png')
-#            if len(glb) == 1:
-#                self.infile = glb[0]
-#            else:
-            raise(ReadError("file is not readable, does it exist? {0}".format(self.infile)))
+            #            # TODO this is a pngwalk hack
+            #            glb = glob.glob(self.infile + '*.png')
+            #            if len(glb) == 1:
+            #                self.infile = glb[0]
+            #            else:
+            raise (ReadError("file is not readable, does it exist? {0}".format(self.infile)))
         self.WRITE_ACCESS = os.access(self.infile, os.W_OK) | os.path.islink(self.infile)
         if not self.WRITE_ACCESS:
             DBlogging.dblogger.debug("{0} Access denied!".format(self.infile))
-            raise(WriteError("file is not writeable, won't be able to move it to proper location: {0}".format(self.infile)))
-#        DBlogging.dblogger.debug("{0} Access Checked out OK".format(self.infile))
+            raise (
+            WriteError("file is not writeable, won't be able to move it to proper location: {0}".format(self.infile)))
 
 
-def calcDigest( infile):
+# DBlogging.dblogger.debug("{0} Access Checked out OK".format(self.infile))
+
+
+def calcDigest(infile):
     """Calculate the SHA1 digest from a file.
 
     `Author:` Jon Niehof, LANL
@@ -192,8 +197,8 @@ def calcDigest( infile):
         with open(infile, 'rb') as f:
             m.update(f.read())
     except IOError:
-        raise(DigestError("File not found: {0}".format(infile)))
-        
+        raise (DigestError("File not found: {0}".format(infile)))
+
     DBlogging.dblogger.debug("digest calculated: {0}, file: {1} ".format(m.hexdigest(), infile))
 
     return m.hexdigest()
