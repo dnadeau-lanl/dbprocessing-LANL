@@ -709,7 +709,6 @@ class DBUtils(object):
             p_ids = list(map(attrgetter('product_id'), p_ids))
             ids = []
             for p in p_ids:
-                print(p)
                 ids.extend(self.getFilesByProduct(p, newest_version=True))
             ids = list(map(attrgetter('product_id'), ids))
         return ids
@@ -2016,7 +2015,7 @@ class DBUtils(object):
         bad_list = []
         for f in files:
             try:
-                if not self.checkFileSMA(f):
+                if not self.checkFileSHA(f):
                     bad_list.append((f, '(100) bad checksum'))
             except Diskfile.DigestError:
                 bad_list.append((f, '(200) file not found'))
@@ -2309,5 +2308,3 @@ class DBUtils(object):
             tree.append([p.product_id, self._childTree(p.product_id)])
         return tree
 
-    def checkFileSMA(self, f):
-        pass

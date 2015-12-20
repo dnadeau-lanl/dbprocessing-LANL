@@ -5,8 +5,6 @@ import os
 import os.path
 import shutil
 import stat
-import tempfile
-import time
 import unittest
 
 try:  # new version changed this annoyingly
@@ -48,7 +46,7 @@ class DBUtilsOtherTests(TestSetup):
     def test_startLogging(self):
         """_startLogging"""
         self.dbu._startLogging()
-        self.assertRaises(DBUtils.DBError, self.test_startLogging) # can only do once
+        self.assertRaises(DBUtils.DBError, self.test_startLogging)  # can only do once
 
     def test_stopLogging(self):
         """_stopLogging"""
@@ -56,8 +54,6 @@ class DBUtilsOtherTests(TestSetup):
         self.assertRaises(DBUtils.DBProcessingError, self.dbu._stopLogging, comment='I am a comment')
         self.dbu._startLogging()
         self.dbu._stopLogging('Comment')
-
-
 
     def test_currentlyProcessing(self):
         """_currentlyProcessing"""
@@ -97,7 +93,6 @@ class DBUtilsOtherTests(TestSetup):
         self.dbu._commitDB()
         self.assertRaises(ValueError, self.dbu._resetProcessingFlag)
         self.dbu._resetProcessingFlag(comment='unittest')
-
 
     def test_nameSubProduct(self):
         """_nameSubProduct"""
@@ -187,8 +182,8 @@ class DBUtilsGetTests(TestSetup):
         # check that this is what we expect
         self.assertEqual(2, len(ans))
         self.assertEqual(set([('instrument', 'instrument'),
-                          ('satellite', 'satellite'),
-                          ('mission', 'mission')]), set(list(zip(*ans))))
+                              ('satellite', 'satellite'),
+                              ('mission', 'mission')]), set(list(zip(*ans))))
         self.assertEqual(ans[0]['mission'], ans[1]['mission'])
         self.assertEqual(ans[0]['satellite'].satellite_name[:-1],
                          ans[1]['satellite'].satellite_name[:-1])
@@ -220,6 +215,22 @@ class DBUtilsGetTests(TestSetup):
                    u'rbspb_int_ect-mageis-L2_20130911_v3.0.0.cdf'])
         self.assertFalse(ans.difference(set(files)))
 
+    def test_purgeFileFromDB_byid(self):
+        """test purgeFileFromDB() by id"""
+        files = self.dbu.getAllFilenames(fullPath=False)
+        self.assertEqual(6681, len(files))
+        self.dbu._purgeFileFromDB(1846)
+        files = self.dbu.getAllFilenames(fullPath=False)
+        self.assertEqual(6680, len(files))  # only 1 gone as not links
+
+    def test_purgeFileFromDB_byname(self):
+        """test purgeFileFromDB() by id"""
+        files = self.dbu.getAllFilenames(fullPath=False)
+        self.assertEqual(6681, len(files))
+        self.dbu._purgeFileFromDB('rbspb_int_ect-mageis-L2_20130913_v3.0.0.cdf')
+        files = self.dbu.getAllFilenames(fullPath=False)
+        self.assertEqual(6677, len(files))  # 3 are gone from link fine
+
     def test_checkDiskForFile(self):
         """_checkDiskForFile"""
         self.assertFalse(self.dbu._checkDiskForFile(1846))
@@ -228,12 +239,16 @@ class DBUtilsGetTests(TestSetup):
         """_checkDiskForFile with fix"""
         self.assertTrue(self.dbu._checkDiskForFile(1846, fix=True))
 
-
     def test_getAllFileIds(self):
         """getAllFileIds"""
         files = self.dbu.getAllFileIds()
         self.assertEqual(6681, len(files))
         self.assertEqual(list(range(1, 6682)), sorted(files))
+
+    def test_getAllFileIds_newest_version(self):
+        """getAllFileIds"""
+        files = self.dbu.getAllFileIds(newest_version=True)
+        self.assertEqual(2752, len(files))
 
     def test_getFileFullPath(self):
         """getFileFullPath"""
@@ -253,6 +268,11 @@ class DBUtilsGetTests(TestSetup):
         self.assertEqual([3], self.dbu.getProcessFromInputProduct(2))
         self.assertFalse(self.dbu.getProcessFromInputProduct(3))
         self.assertFalse(self.dbu.getProcessFromInputProduct(124324))
+
+    def test_getRunProcess(self):
+        """getRunProcess should work"""
+        proc = self.dbu.getRunProcess()
+        self.assertEqual(0, len(proc))
 
     def test_getProcessFromOutputProduct(self):
         """getProcessFromOutputProduct"""
@@ -320,6 +340,16 @@ class DBUtilsGetTests(TestSetup):
         self.assertRaises(DBUtils.DBNoData, self.dbu.getCodeID, 'badval')
         self.assertRaises(DBUtils.DBNoData, self.dbu.getCodeID, 343423)
 
+    def test_getAllCodes_active(self):
+        """get all the codes"""
+        codes = self.dbu.getAllCodes(active=True)
+        self.assertEqual(66, len(codes))
+
+    def test_getAllCodes_all(self):
+        """get all the codes"""
+        codes = self.dbu.getAllCodes(active=False)
+        self.assertEqual(66, len(codes))
+
     def test_getFileDates(self):
         """getFileDates"""
         self.assertEqual([datetime.date(2013, 9, 9), datetime.date(2013, 9, 9)],
@@ -351,6 +381,26 @@ class DBUtilsGetTests(TestSetup):
         self.assertEqual(1, len(val))
         self.assertEqual(['ect_rbspb_0377_381_05.ptp.gz'], val)
 
+    def test_getFilesByLevel_1(self):
+        """test getFilesByLevel()"""
+        files = self.dbu.getFilesByLevel(1)
+        self.assertEqual(402, len(files))
+
+    def test_getFilesByLevel_2(self):
+        """test getFilesByLevel()"""
+        files = self.dbu.getFilesByLevel(1, id_only=True)
+        self.assertEqual(402, len(files))
+
+    def test_getFilesByLevel_3(self):
+        """test getFilesByLevel()"""
+        files = self.dbu.getFilesByLevel(2, newest_version=True)
+        self.assertEqual(184, len(files))
+
+    def test_getFilesByLevel_3(self):
+        """test getFilesByLevel()"""
+        files = self.dbu.getFilesByLevel(2, id_only=True, newest_version=True)
+        self.assertEqual(184, len(files))
+
     def test_getFilesByDate(self):
         """getFilesByDate"""
         self.assertFalse(self.dbu.getFilesByDate([datetime.date(2013, 12, 12)] * 2))
@@ -363,7 +413,8 @@ class DBUtilsGetTests(TestSetup):
                'ect_rbspa_0377_349_01.ptp.gz']
         filenames = sorted([v.filename for v in val])
         self.assertEqual(ans, filenames[:len(ans)])
-        self.assertRaises(NotImplementedError, self.dbu.getFilesByDate, [datetime.date(2013, 9, 10)] * 2, newest_version=True)
+        self.assertRaises(NotImplementedError, self.dbu.getFilesByDate, [datetime.date(2013, 9, 10)] * 2,
+                          newest_version=True)
         return
         val = self.dbu.getFilesByDate([datetime.date(2013, 9, 10)] * 2, newest_version=True)
         self.assertEqual(2, len(val))
@@ -448,6 +499,11 @@ class DBUtilsGetTests(TestSetup):
         self.assertRaises(NoResultFound, self.dbu.getSatelliteID, 343423)
         self.assertEqual([1, 2], self.dbu.getSatelliteID([1, 2]))
 
+    def test_getAllCodesFromProcess(self):
+        """getAllCodesFromProcess"""
+        proc = self.dbu.getAllCodesFromProcess(1)
+        self.assertEqual(set(proc), set([(1, datetime.date(2000, 1, 1), datetime.date(2050, 12, 31))]))
+
     def test_getCodePath(self):
         """getCodePath"""
         self.assertEqual('/n/space_data/cda/rbsp/codes/l05_to_l1.py',
@@ -522,6 +578,14 @@ class DBUtilsGetTests(TestSetup):
                               5824, 5831, 5834, 5838, 5842, 5845, 5849, 5855, 5858,
                               5861, 5865]), set(ids))
 
+    def test_getVersion(self):
+        """test getVersion"""
+        ver = self.dbu.getVersion(123)
+        self.assertEqual(1, ver.interface)
+        self.assertEqual(1, ver.quality)
+        self.assertEqual(0, ver.revision)
+        self.assertEqual(Version.Version(1,1,0), ver)
+
     def test_getFileParents(self):
         """getFileParents"""
         ids = self.dbu.getFileParents(1879, id_only=True)
@@ -538,7 +602,6 @@ class ProcessqueueTests(TestSetup):
 
     def add_files(self):
         self.dbu.Processqueue.push([17, 18, 19, 20, 21])
-
 
     def test_pq_getall(self):
         """test self.Processqueue.getAll"""
@@ -585,7 +648,6 @@ class ProcessqueueTests(TestSetup):
         self.assertEqual(5, self.dbu.Processqueue.len())
         self.dbu.Processqueue.remove('ect_rbspb_0377_381_03.ptp.gz')
 
-
     def test_pq_push(self):
         """test self.Processqueue.push"""
         self.assertEqual(0, self.dbu.Processqueue.len())
@@ -602,8 +664,6 @@ class ProcessqueueTests(TestSetup):
         """test self.Processqueue.push with max_add"""
         self.dbu.Processqueue.push([17, 18, 19, 20, 21], max_add=2)
         self.assertEqual(5, self.dbu.Processqueue.len())
-
-
 
     def test_pq_len(self):
         """test self.Processqueue.len"""
