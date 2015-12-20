@@ -12,7 +12,6 @@ filename = 'test_file.txt'
 
 
 class dummyDBU(object):
-
     def __init__(self):
         self.mission = filename
 
@@ -54,7 +53,6 @@ class DBfileTests(unittest.TestCase):
     def test_DBfile_3(self):
         f = DBfile.DBfile(self.diskfile, self.dbu)
         f.addFileToDB()
-
 
 
 if __name__ == "__main__":
