@@ -12,10 +12,10 @@ flns = sys.argv  #get command line arguments
 
 #reads full contents of rext file into a list
 fh = open(flns[-2])
-in = fh.readlines()
+indat = fh.readlines()
 fh.close()
 
 outlist = ['level 1 file from: ']
 fh = open(flns[-1], 'w')
-fh.writelines(outlist.extend(in))
+fh.writelines(outlist.extend(indat))
 fh.close() 
