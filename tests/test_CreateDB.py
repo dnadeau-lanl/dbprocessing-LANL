@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 """
-Test suite for the Lstar_db file
 
 @author: Brian Larsen
 @organization: LANL
@@ -14,17 +13,18 @@ try:
     import unittest_pretty as ut
 except ImportError:
     import unittest as ut
+import datetime
 import unittest
 
-import datetime
-
 from sqlalchemy import orm
-try: # version change issue
+
+try:  # version change issue
     from sqlalchemy.exceptions import IntegrityError
 except ImportError:
     from sqlalchemy.exc import IntegrityError
 
-import CreateDB
+from dbprocessing import CreateDB
+
 
 class CreateDBTests(unittest.TestCase):
     """
@@ -38,7 +38,7 @@ class CreateDBTests(unittest.TestCase):
 
     def setUp(self):
         super(CreateDBTests, self).setUp()
-        self.db = CreateDB.dbprocessing_db(filename = ':memory:', create=True)
+        self.db = CreateDB.dbprocessing_db(filename=':memory:', create=True)
         Session = orm.sessionmaker(bind=self.db.engine)
         session = Session()
         self.session = session
@@ -676,7 +676,7 @@ class CreateDBTests(unittest.TestCase):
         # file.utc_start_time = datetime.datetime(2000, 1, 2)
         # file.utc_stop_time = datetime.datetime(2000, 1, 1)
         file.met_start_time = 100
-        file.met_stop_time  =  99
+        file.met_stop_time = 99
         self.session.add(file)
         self.assertRaises(IntegrityError, self.session.commit)
 
@@ -1244,8 +1244,6 @@ class CreateDBTests(unittest.TestCase):
         # lf.code_id = 1
         self.session.add(lf)
         self.assertRaises(IntegrityError, self.session.commit)
-
-
 
 
 if __name__ == '__main__':
