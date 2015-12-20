@@ -1,4 +1,5 @@
 from __future__ import division
+
 """
 Module to handle version information of files and codes.
 
@@ -21,6 +22,7 @@ __version__ = '2.0.3'
 class VersionError(Exception):
     """Error class for Version that calls out that an invalid version has been specified"""
     pass
+
 
 class Version(object):
     """
@@ -71,10 +73,17 @@ class Version(object):
     >>> v == v2
     True
     """
+
     def __init__(self,
-            interface_version,
-            quality_version,
-            revision_version):
+                 interface_version,
+                 quality_version,
+                 revision_version):
+        """
+
+        @type revision_version: int or str
+        @type quality_version: int or str
+        @type interface_version: int or str
+        """
         self.interface = int(interface_version)
         self.revision = int(revision_version)
         self.quality = int(quality_version)
@@ -84,6 +93,8 @@ class Version(object):
     def fromString(inval):
         """
         given a string of the form x.y.z return a Version object
+        @type inval: str
+        @param inval: string version to change to a Version object
         """
         return Version(*inval.split('.'))
 
@@ -92,15 +103,15 @@ class Version(object):
         check a version to make sure it is valid, works on current object
         """
         if self.interface == 0:
-            raise(VersionError("interface_version starts at 1"))
+            raise (VersionError("interface_version starts at 1"))
 
     def __repr__(self):
         return 'Version: ' + str(self.interface) + '.' + str(self.quality) + '.' + \
-            str(self.revision)
+               str(self.revision)
 
     def __str__(self):
         return str(self.interface) + '.' + str(self.quality) + '.' + \
-            str(self.revision)
+               str(self.revision)
 
     def incInterface(self):
         """increment the interface version and reset the other two"""
@@ -129,16 +140,16 @@ class Version(object):
         return False
 
     def __gt__(self, other):
-        val_s = 10000*self.interface + 100*self.quality + self.revision
-        val_o = 10000*other.interface + 100*other.quality + other.revision
+        val_s = 10000 * self.interface + 100 * self.quality + self.revision
+        val_o = 10000 * other.interface + 100 * other.quality + other.revision
         if val_s > val_o:
             return True
         else:
             return False
 
     def __lt__(self, other):
-        val_s = 10000*self.interface + 100*self.quality + self.revision
-        val_o = 10000*other.interface + 100*other.quality + other.revision
+        val_s = 10000 * self.interface + 100 * self.quality + self.revision
+        val_o = 10000 * other.interface + 100 * other.quality + other.revision
         if val_s < val_o:
             return True
         else:
@@ -149,7 +160,7 @@ class Version(object):
 
     def __ge__(self, other):
         return self.__eq__(other) or self.__gt__(other)
-           
+
     def __ne__(self, other):
         if self.interface != other.interface:
             return True
@@ -165,6 +176,3 @@ class Version(object):
 
     def __add__(self, other):
         return [self.interface + other.interface, self.quality + other.quality, self.revision + other.revision]
-
-
-
