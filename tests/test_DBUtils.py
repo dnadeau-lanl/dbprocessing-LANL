@@ -539,6 +539,7 @@ class ProcessqueueTests(TestSetup):
     def add_files(self):
         self.dbu.Processqueue.push([17, 18, 19, 20, 21])
 
+
     def test_pq_getall(self):
         """test self.Processqueue.getAll"""
         self.assertEqual(0, self.dbu.Processqueue.len())
@@ -587,7 +588,6 @@ class ProcessqueueTests(TestSetup):
 
     def test_pq_push(self):
         """test self.Processqueue.push"""
-        t0 = time.time()
         self.assertEqual(0, self.dbu.Processqueue.len())
         self.dbu.Processqueue.push(20)
         self.assertEqual(1, self.dbu.Processqueue.len())
@@ -597,6 +597,13 @@ class ProcessqueueTests(TestSetup):
         self.assertFalse(self.dbu.Processqueue.push(214442))
         self.assertFalse(self.dbu.Processqueue.push(20))
         self.assertEqual([17, 18, 19, 21], self.dbu.Processqueue.push([17, 18, 19, 20, 21]))
+
+    def test_pq_push_max_add(self):
+        """test self.Processqueue.push with max_add"""
+        self.dbu.Processqueue.push([17, 18, 19, 20, 21], max_add=2)
+        self.assertEqual(5, self.dbu.Processqueue.len())
+
+
 
     def test_pq_len(self):
         """test self.Processqueue.len"""

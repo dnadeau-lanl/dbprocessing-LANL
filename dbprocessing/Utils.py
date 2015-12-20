@@ -33,7 +33,7 @@ def progressbar(count, blocksize, totalsize, text='Download Progress'):
 
 # from http://stackoverflow.com/questions/434287/what-is-the-most-pythonic-way-to-iterate-over-a-list-in-chunks
 def chunker(seq, size):
-    return (seq[pos:pos + size] for pos in xrange(0, len(seq), size))
+    return (seq[pos:pos + size] for pos in range(0, len(seq), size))
 
 
 def unique(seq):
@@ -51,7 +51,7 @@ def daterange_to_dates(daterange):
     given a daterange return the dat objects for all days in the range
     """
     return [daterange[0] + datetime.timedelta(days=val) for val in
-            xrange((daterange[1] - daterange[0]).days + 1)]
+            range((daterange[1] - daterange[0]).days + 1)]
 
 
 def parseDate(inval):

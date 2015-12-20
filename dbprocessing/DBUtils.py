@@ -418,7 +418,7 @@ class DBUtils(object):
         DBlogging.dblogger.debug("Entire Processqueue was read: {0} elements returned".format(len(ans)))
         return ans
 
-    def _processqueuePush(self, fileid, version_bump=None):
+    def _processqueuePush(self, fileid, version_bump=None, max_add=150):
         """
         push a file onto the process queue (onto the right)
 
@@ -431,15 +431,15 @@ class DBUtils(object):
         =======
         file_id : int
             the file_id that was passed in, but grabbed from the db
+            @type max_add: int
         """
         if not hasattr(fileid, '__iter__'):
             fileid = [fileid]
         else:
             # do this in chunks as too many entries breaks things
-            MAX_ADD = 150
-            if len(fileid) > MAX_ADD:
+            if len(fileid) > max_add:
                 outval = []
-                for v in Utils.chunker(fileid, MAX_ADD):
+                for v in Utils.chunker(fileid, max_add):
                     outval.extend(self._processqueuePush(v, version_bump=version_bump))
                 return outval
 
