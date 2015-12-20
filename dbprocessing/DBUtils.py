@@ -14,11 +14,11 @@ from sqlalchemy.orm import mapper
 from sqlalchemy.orm import sessionmaker
 
 try:  # new version changed this annoyingly
-    from sqlalchemy.exceptions import IntegrityError
-    from sqlalchemy.orm.exceptions import NoResultFound
-except ImportError:
     from sqlalchemy.exc import IntegrityError
     from sqlalchemy.orm.exc import NoResultFound
+except ImportError:
+    from sqlalchemy.exceptions import IntegrityError
+    from sqlalchemy.orm.exceptions import NoResultFound
 from sqlalchemy.sql import func
 from sqlalchemy import and_
 
@@ -258,7 +258,6 @@ class DBUtils(object):
         if self._currentlyProcessing():
             raise (DBError('A Currently Processing flag is still set, cannot process now'))
         # save this class instance so that we can finish the logging later
-        assert isinstance(self.Mission, sqlalchemy.sql.schema.Table)
         self.__p1 = self._addLogging(True,
                                      datetime.datetime.utcnow(),
                                      ## for now there is one mission only per DB
@@ -267,7 +266,7 @@ class DBUtils(object):
                                      pwd.getpwuid(os.getuid())[0],
                                      socket.gethostname(),
                                      pid=os.getpid())
-        DBlogging.dblogger.info("Logging started: {0:d}: {1:s}, PID: {2:s}, M_id: {3:s}, user: {4:s}, hostmane: {5:s}"
+        DBlogging.dblogger.info("Logging started: {0:d}: {1}, PID: {2}, M_id: {3}, user: {4:s}, hostmane: {5:s}"
                                 .format(self.__p1.logging_id, self.__p1.processing_start_time, self.__p1.pid,
                                         self.__p1.mission_id, self.__p1.user, self.__p1.hostname))
 

@@ -5,6 +5,7 @@ import os
 import os.path
 import shutil
 import stat
+import tempfile
 import time
 import unittest
 
@@ -44,6 +45,20 @@ class TestSetup(unittest.TestCase):
 class DBUtilsOtherTests(TestSetup):
     """Tests that are not processqueue or get or add"""
 
+    def test_startLogging(self):
+        """_startLogging"""
+        self.dbu._startLogging()
+        self.assertRaises(DBUtils.DBError, self.test_startLogging) # can only do once
+
+    def test_stopLogging(self):
+        """_stopLogging"""
+        # can't stop before starting
+        self.assertRaises(DBUtils.DBProcessingError, self.dbu._stopLogging, comment='I am a comment')
+        self.dbu._startLogging()
+        self.dbu._stopLogging('Comment')
+
+
+
     def test_currentlyProcessing(self):
         """_currentlyProcessing"""
         self.assertFalse(self.dbu._currentlyProcessing())
@@ -68,12 +83,21 @@ class DBUtilsOtherTests(TestSetup):
         self.dbu._commitDB()
         self.assertRaises(DBUtils.DBError, self.dbu._currentlyProcessing)
 
-    ## def test_purgeFileFromDB(self):
-    ##     """_purgeFileFromDB"""
-    ##     files = self.dbu.getAllFilenames()
-    ##     file_id = self.dbu.getFileId(files[0])
-    ##     self.dbu._purgeFileFromDB(file_id)
-    ##     self.assertRaises(self.DBUtils.DBNoData, self.dbu.getFileId, file_id)
+    def test_resetProcessingFlag(self):
+        """resetProcessingFlag"""
+        self.assertFalse(self.dbu._currentlyProcessing())
+        log = self.dbu.Logging()
+        log.currently_processing = True
+        log.pid = 123
+        log.processing_start_time = datetime.datetime.now()
+        log.mission_id = self.dbu.getMissionID('rbsp')
+        log.user = 'user'
+        log.hostname = 'hostname'
+        self.dbu.session.add(log)
+        self.dbu._commitDB()
+        self.assertRaises(ValueError, self.dbu._resetProcessingFlag)
+        self.dbu._resetProcessingFlag(comment='unittest')
+
 
     def test_nameSubProduct(self):
         """_nameSubProduct"""
@@ -195,6 +219,15 @@ class DBUtilsGetTests(TestSetup):
                    u'rbspb_int_ect-mageis-L2_20130912_v3.0.0.cdf',
                    u'rbspb_int_ect-mageis-L2_20130911_v3.0.0.cdf'])
         self.assertFalse(ans.difference(set(files)))
+
+    def test_checkDiskForFile(self):
+        """_checkDiskForFile"""
+        self.assertFalse(self.dbu._checkDiskForFile(1846))
+
+    def test_checkDiskForFile_fix(self):
+        """_checkDiskForFile with fix"""
+        self.assertTrue(self.dbu._checkDiskForFile(1846, fix=True))
+
 
     def test_getAllFileIds(self):
         """getAllFileIds"""
@@ -638,6 +671,13 @@ class ProcessqueueTests(TestSetup):
         self.dbu.Processqueue.rawadd(20000)
         pq = self.dbu.Processqueue.pop(1)
         self.assertRaises(DBUtils.DBNoData, self.dbu.getFileID, pq)
+
+    def test_pq_flush(self):
+        """test flushing the process queue"""
+        self.add_files()
+        self.assertEqual(5, self.dbu.Processqueue.len())
+        self.dbu._processqueueFlush()
+        self.assertEqual(0, self.dbu.Processqueue.len())
 
 
 if __name__ == "__main__":
