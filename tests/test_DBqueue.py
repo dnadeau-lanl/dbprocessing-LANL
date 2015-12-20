@@ -4,7 +4,6 @@ import unittest
 
 from dbprocessing import DBqueue
 
-
 __version__ = '2.0.3'
 
 
@@ -28,7 +27,6 @@ class DBqueueTests(unittest.TestCase):
         for i, val in enumerate(self.queue.popiter()):
             self.assertEqual(expected[i], val)
         self.assertFalse(self.queue)
-
 
 
 if __name__ == "__main__":
