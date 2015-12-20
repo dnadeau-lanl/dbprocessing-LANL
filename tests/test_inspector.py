@@ -23,7 +23,9 @@ class InspectorClass(unittest.TestCase):
         shutil.copy(sqpath, self.sqlworking)
         os.chmod(self.sqlworking, stat.S_IRUSR | stat.S_IWUSR)
         self.dbu = DBUtils.DBUtils(self.sqlworking)
-        self.filename = tempfile.NamedTemporaryFile(delete=False).name
+        self.filename = tempfile.NamedTemporaryFile(delete=False)
+        self.filename.close()
+        self.filename = self.filename.name
 
         class inspC(inspector.inspector):
             code_name = 'test_inspector.py'
