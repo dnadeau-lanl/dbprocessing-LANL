@@ -33,7 +33,7 @@ def progressbar(count, blocksize, totalsize, text='Download Progress'):
 
 # from http://stackoverflow.com/questions/434287/what-is-the-most-pythonic-way-to-iterate-over-a-list-in-chunks
 def chunker(seq, size):
-    return (seq[pos:pos + size] for pos in range(0, len(seq), size))
+    return (list(seq[pos:pos + size]) for pos in list(range(0, len(seq), size)))
 
 
 def unique(seq):
@@ -75,7 +75,7 @@ def flatten(l):
     thanks SO: http://stackoverflow.com/questions/2158395/flatten-an-irregular-list-of-lists-in-python
     """
     for el in l:
-        if isinstance(el, collections.Iterable) and not isinstance(el, basestring):
+        if isinstance(el, collections.Iterable) and not hasattr(el, 'lower'):
             for sub in flatten(el):
                 yield sub
         else:
@@ -175,7 +175,7 @@ def dirSubs(path, filename, utc_file_date, utc_start_time, version):
     if '{S}' in path:
         path = path.replace('{S}', utc_start_time.strftime('%S'))
     if '{VERSION}' in path:
-        if isinstance(version, (unicode, str)):
+        if hasattr(version, 'lower'):
             version = Version.Version.fromString(version)
         path = path.replace('{VERSION}', '{0}'.format(str(version)))
     if '{DATE}' in path:
