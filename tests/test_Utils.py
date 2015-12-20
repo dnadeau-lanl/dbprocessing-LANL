@@ -1,6 +1,7 @@
 #!/usr/bin/env python2.6
 
 import datetime
+import os
 import unittest
 
 from dbprocessing import Utils
@@ -118,6 +119,13 @@ class UtilsTests(unittest.TestCase):
         """strargs_to_args tests"""
         tst = Utils.strargs_to_args(['arg1=1'])
         self.assertEqual({ 'arg1': '1' }, tst)
+
+    def test_processRunning(self):
+        """processRunning should work"""
+        pid = os.getpid()
+        self.assertTrue(Utils.processRunning(pid))
+        # TODO is there a smarter way to do this that can never be running?
+        self.assertFalse(Utils.processRunning(655434))
 
 
 if __name__ == "__main__":
