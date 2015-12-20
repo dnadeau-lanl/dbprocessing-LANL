@@ -5,8 +5,6 @@
 classes as backup to making reports
 """
 
-
-
 """
 things included are:
     - number and list of files ingested
@@ -25,23 +23,25 @@ import re
 import dateutil.parser as dup
 import numpy as np
 
-from dbprocessing import DBUtils
+from . import DBUtils
 
 dbu = DBUtils.DBUtils('~/RBSP_processing.sqlite')
 dbu._openDB()
 dbu._createTableObjects()
 
+
 class logfile(object):
     """
     class to hold a datafile
     """
+
     def __init__(self, filename, timerange=None):
         """
         read in the file and collect what we need
         """
         if not os.path.isfile(filename):
-            raise(ValueError('filename does not exist'))
-        #setup the instance vars so they always exist
+            raise (ValueError('filename does not exist'))
+        # setup the instance vars so they always exist
         self._logData = []
         self.error = []
         self.info = []
@@ -67,7 +67,7 @@ class logfile(object):
 
     def setTimerange(self, timerange):
         if len(timerange) != 2:
-            raise(ValueError('timerange must be a list/tuple of 2 datetime objects'))
+            raise (ValueError('timerange must be a list/tuple of 2 datetime objects'))
         self.timerange = timerange
 
     def _firstLastDate(self):
@@ -81,7 +81,7 @@ class logfile(object):
         """
         lines = []
         for line in self._logData:
-            m = re.search( r'\s-\sERROR\s-\s' , line)
+            m = re.search(r'\s-\sERROR\s-\s', line)
             if m:
                 lines.append(line)
         return lines
@@ -101,7 +101,7 @@ class logfile(object):
         """
         lines = []
         for line in self._logData:
-            m = re.search( r'\s-\sINFO\s-\s' , line)
+            m = re.search(r'\s-\sINFO\s-\s', line)
             if m:
                 lines.append(line)
         return lines
@@ -112,7 +112,7 @@ class logfile(object):
         """
         lines = []
         for line in self._logData:
-            m = re.search( r'\s-\sDEBUG\s-\s' , line)
+            m = re.search(r'\s-\sDEBUG\s-\s', line)
             if m:
                 lines.append(line)
         return lines
@@ -124,7 +124,7 @@ class logfile(object):
         """
         lines = []
         for line in self.info:
-            m = re.search( r'\s-\sINFO\s-\sFile\s.*\sentered\sin\sDB.*f\_id=\d*$' , line)
+            m = re.search(r'\s-\sINFO\s-\sFile\s.*\sentered\sin\sDB.*f\_id=\d*$', line)
             if m:
                 lines.append(ingested(line))
         return lines
@@ -146,13 +146,14 @@ class logfile(object):
         """
         lines = []
         for line in self.info:
-            m = re.match( r'^.*\sINFO\s\-\srunning command\:\s.*$' , line)
+            m = re.match(r'^.*\sINFO\s\-\srunning command\:\s.*$', line)
             if m:
                 lines.append(commandsRun(line))
 
         names = [v.filename for v in lines]
         uniq, ind = np.unique(names, return_index=True)
         return [lines[v] for v in ind]
+
 
 class HTMLbase(object):
     def __eq__(self, other):
@@ -191,6 +192,7 @@ class HTMLbase(object):
         except TypeError:
             return self.dt.strftime('%Y-%m-%d') <= other.dt
 
+
 class commandsRun(HTMLbase):
     def __init__(self, inStr):
         """
@@ -198,10 +200,11 @@ class commandsRun(HTMLbase):
         """
         global dbu
         self.dt = dup.parse(inStr.split(',')[0])
-        m = re.search( r'^.*\sINFO\s\-\srunning command\:\s(.*)$' , inStr.strip() )
+        m = re.search(r'^.*\sINFO\s\-\srunning command\:\s(.*)$', inStr.strip())
         self.filename = m.group(1).split()[0]
         # get the process name
-#        dbu.session.query(dbu.Code).filter_by(filename = os.path.basename(self.filename))
+
+    #        dbu.session.query(dbu.Code).filter_by(filename = os.path.basename(self.filename))
 
     def htmlheader(self):
         """
@@ -231,7 +234,6 @@ class commandsRun(HTMLbase):
         return outStr
 
 
-
 class ingested(HTMLbase):
     def __init__(self, inStr):
         """
@@ -239,9 +241,9 @@ class ingested(HTMLbase):
         """
         global dbu
         self.dt = dup.parse(inStr.split(',')[0])
-        m = re.search( r'\s-\sINFO\s-\sFile\s(.*)\sentered' , inStr.strip())
+        m = re.search(r'\s-\sINFO\s-\sFile\s(.*)\sentered', inStr.strip())
         self.filename = m.group(1)
-        m = re.search( r'f\_id=(\d*)' , inStr)
+        m = re.search(r'f\_id=(\d*)', inStr)
         self.file_id = m.group(1)
         try:
             tb = dbu.getTraceback('File', self.file_id)
@@ -285,7 +287,7 @@ class movedToError(HTMLbase):
         pass in the lig line and parse it saving what we want
         """
         self.dt = dup.parse(inStr.split(',')[0])
-        self.filename = os.path.basename(inStr.split()[-4]) # this is hopefully always constant
+        self.filename = os.path.basename(inStr.split()[-4])  # this is hopefully always constant
 
     def htmlheader(self):
         """
@@ -321,7 +323,7 @@ class errors(HTMLbase):
         parse the error and collect what we want
         """
         self.dt = dup.parse(inStr.split(',')[0])
-        m = re.findall( r'^.*,\d\d\d\s\-\s(.*)\s\-\sERROR\s\-\s(.*)$' , inStr.strip())
+        m = re.findall(r'^.*,\d\d\d\s\-\s(.*)\s\-\sERROR\s\-\s(.*)$', inStr.strip())
         self.codename = m[0][0]
         self.errormsg = m[0][1]
 
