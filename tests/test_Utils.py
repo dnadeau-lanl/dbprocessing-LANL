@@ -100,6 +100,25 @@ class UtilsTests(unittest.TestCase):
         expected = [datetime.datetime(2000, 1, 4), datetime.datetime(2000, 1, 5)]
         self.assertEqual(expected, Utils.daterange_to_dates(daterange))
 
+    def test_strargs_to_args_1(self):
+        """strargs_to_args tests"""
+        self.assertTrue(Utils.strargs_to_args(None) is None)
+
+    def test_strargs_to_args_2(self):
+        """strargs_to_args tests"""
+        tst = Utils.strargs_to_args('arg1=1 arg2=2')
+        self.assertEqual({ 'arg2': '2', 'arg1': '1' }, tst)
+
+    def test_strargs_to_args_3(self):
+        """strargs_to_args tests"""
+        tst = Utils.strargs_to_args(['arg1=1', 'arg2=2'])
+        self.assertEqual({ 'arg2': '2', 'arg1': '1' }, tst)
+
+    def test_strargs_to_args_4(self):
+        """strargs_to_args tests"""
+        tst = Utils.strargs_to_args(['arg1=1'])
+        self.assertEqual({ 'arg1': '1' }, tst)
+
 
 if __name__ == "__main__":
     unittest.main()
