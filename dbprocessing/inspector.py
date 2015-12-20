@@ -70,6 +70,7 @@ class inspector(object):
     __metaclass__ = EphemeralCallable(ABCMeta)
 
     def __init__(self, filename, dbu, product, **kwargs):
+        assert(hasattr(self, 'code_name'))
         DBlogging.dblogger.debug("Entered inspector {0} with kwargs: {1}".format(self.code_name, kwargs))
         self.dbu = dbu  # give us access to DBUtils
         self.filename = filename
@@ -84,7 +85,7 @@ class inspector(object):
             self._populate()
 
     @abstractmethod
-    def inspect(self, filename, kwargs):
+    def inspect(self, kwargs):
         """
         required method to populate the DiskFile object
         can take in some keyword arguments specified in the db
