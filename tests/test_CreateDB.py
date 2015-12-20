@@ -7,7 +7,13 @@
 @contact: balarsen@lanl.gov
 
 @version: V1: 20-Dec-2010 (BAL)
+
+This is a test file over a script
 """
+import os
+import sys
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../scripts'))
 
 try:
     import unittest_pretty as ut
@@ -23,7 +29,8 @@ try:  # version change issue
 except ImportError:
     from sqlalchemy.exc import IntegrityError
 
-from dbprocessing import CreateDB
+
+import CreateDB
 
 
 class CreateDBTests(unittest.TestCase):
@@ -39,6 +46,7 @@ class CreateDBTests(unittest.TestCase):
     def setUp(self):
         super(CreateDBTests, self).setUp()
         self.db = CreateDB.dbprocessing_db(filename=':memory:', create=True)
+        self.db.createDB()
         Session = orm.sessionmaker(bind=self.db.engine)
         session = Session()
         self.session = session
