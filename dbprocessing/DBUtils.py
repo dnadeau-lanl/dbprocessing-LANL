@@ -377,22 +377,6 @@ class DBUtils(object):
         DBlogging.dblogger.info("Processqueue was cleared")
         return length
 
-    def _processqueueRemoveItem(self, item):
-        """
-        remove a file from the queue by name or number
-        """
-        # pre prep for a single number or single filename
-        if isinstance(item, int) or hasattr(item, 'lower'): # single number or string type
-            item = [item]
-        # loop over item changing each string to a file_id
-        for ii, v in enumerate(item):
-            if hasattr(v, 'lower'):
-                item[ii] = self.getFileID(v)
-        sq = self.session.query(self.Processqueue).filter(self.Processqueue.file_id.in_(item))
-        for v in sq:
-            self.session.delete(v)
-        if sq:
-            self._commitDB()
 
     def _processqueueGetAll(self, version_bump=None):
         """
