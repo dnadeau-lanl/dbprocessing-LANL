@@ -18,7 +18,7 @@ import traceback
 import DBlogging
 import DBStrings
 import DBUtils
-from inspector import extract_Version
+from Version import extract_Version
 import Utils
 import Version
 

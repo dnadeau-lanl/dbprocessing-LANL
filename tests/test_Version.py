@@ -4,7 +4,6 @@ import unittest
 
 from dbprocessing import Version
 
-
 __version__ = '2.0.3'
 
 
@@ -27,81 +26,80 @@ class VersionTests(unittest.TestCase):
 
     def test_Version_repr(self):
         """__repr__ should have a known output"""
-        invals = ( Version.Version(1, 0, 1), Version.Version(5, 0, 1),
-                  Version.Version(1, 3, 1) )
-        answers = ( '1.0.1', '5.0.1', '1.3.1' )
+        invals = (Version.Version(1, 0, 1), Version.Version(5, 0, 1),
+                  Version.Version(1, 3, 1))
+        answers = ('1.0.1', '5.0.1', '1.3.1')
         for i, val in enumerate(invals):
             self.assertEqual(answers[i], str(val))
 
     def test_Version_eq(self):
         """__eq__ should work"""
-        invals = (  (Version.Version(1, 0, 0), Version.Version(1, 0, 0)),
-                        (Version.Version(1, 2, 0), Version.Version(1, 0, 0)),
-                        (Version.Version(1, 0, 4), Version.Version(1, 0, 0)),
-                        (Version.Version(4, 2, 1), Version.Version(1, 0, 0)) )
+        invals = ((Version.Version(1, 0, 0), Version.Version(1, 0, 0)),
+                  (Version.Version(1, 2, 0), Version.Version(1, 0, 0)),
+                  (Version.Version(1, 0, 4), Version.Version(1, 0, 0)),
+                  (Version.Version(4, 2, 1), Version.Version(1, 0, 0)))
         real_ans = (True, False, False, False)
         for i, val in enumerate(invals):
             self.assertEqual(real_ans[i], val[0] == val[1])
 
     def test_Version_le(self):
         """__le__ should work"""
-        invals = (  (Version.Version(1, 0, 0), Version.Version(1, 0, 0)),
-                        (Version.Version(1, 2, 0), Version.Version(1, 0, 0)),
-                        (Version.Version(1, 0, 4), Version.Version(1, 0, 0)),
-                        (Version.Version(1, 2, 1), Version.Version(4, 0, 0)) )
+        invals = ((Version.Version(1, 0, 0), Version.Version(1, 0, 0)),
+                  (Version.Version(1, 2, 0), Version.Version(1, 0, 0)),
+                  (Version.Version(1, 0, 4), Version.Version(1, 0, 0)),
+                  (Version.Version(1, 2, 1), Version.Version(4, 0, 0)))
         real_ans = (True, False, False, True)
         for i, val in enumerate(invals):
             self.assertEqual(real_ans[i], val[0] <= val[1])
 
-
     def test_Version_eq(self):
         """__eq__ should work"""
-        invals = (  (Version.Version(1, 0, 0), Version.Version(1, 0, 0)),
-                        (Version.Version(1, 2, 0), Version.Version(1, 0, 0)),
-                        (Version.Version(1, 0, 4), Version.Version(1, 0, 0)),
-                        (Version.Version(4, 2, 1), Version.Version(1, 0, 0)) )
+        invals = ((Version.Version(1, 0, 0), Version.Version(1, 0, 0)),
+                  (Version.Version(1, 2, 0), Version.Version(1, 0, 0)),
+                  (Version.Version(1, 0, 4), Version.Version(1, 0, 0)),
+                  (Version.Version(4, 2, 1), Version.Version(1, 0, 0)))
         real_ans = (True, False, False, False)
         for i, val in enumerate(invals):
             self.assertEqual(real_ans[i], val[0] == val[1])
 
     def test_Version_ge(self):
         """__ge__ should work"""
-        invals = (  (Version.Version(1, 0, 0), Version.Version(1, 0, 0)),
-                        (Version.Version(1, 2, 0), Version.Version(1, 0, 0)),
-                        (Version.Version(1, 0, 4), Version.Version(1, 0, 0)),
-                        (Version.Version(1, 2, 1), Version.Version(4, 0, 0)) )
+        invals = ((Version.Version(1, 0, 0), Version.Version(1, 0, 0)),
+                  (Version.Version(1, 2, 0), Version.Version(1, 0, 0)),
+                  (Version.Version(1, 0, 4), Version.Version(1, 0, 0)),
+                  (Version.Version(1, 2, 1), Version.Version(4, 0, 0)))
         real_ans = (True, True, True, False)
         for i, val in enumerate(invals):
             self.assertEqual(real_ans[i], val[0] >= val[1])
-            
+
     def test_Version_ne(self):
         """__ne__ should work"""
-        invals = (  (Version.Version(1, 0, 0), Version.Version(1, 0, 0)),
-                        (Version.Version(1, 2, 0), Version.Version(1, 0, 0)),
-                        (Version.Version(1, 0, 4), Version.Version(1, 0, 0)),
-                        (Version.Version(4, 2, 1), Version.Version(1, 0, 0)) )
+        invals = ((Version.Version(1, 0, 0), Version.Version(1, 0, 0)),
+                  (Version.Version(1, 2, 0), Version.Version(1, 0, 0)),
+                  (Version.Version(1, 0, 4), Version.Version(1, 0, 0)),
+                  (Version.Version(4, 2, 1), Version.Version(1, 0, 0)))
         real_ans = (False, True, True, True)
         for i, val in enumerate(invals):
             self.assertEqual(real_ans[i], val[0] != val[1])
 
     def test_Version_gt(self):
         """__gt__ should work"""
-        invals = (  (Version.Version(1, 0, 0), Version.Version(1, 0, 0)),
-                        (Version.Version(1, 2, 0), Version.Version(1, 0, 0)),
-                        (Version.Version(1, 0, 4), Version.Version(1, 0, 0)),
-                        (Version.Version(4, 2, 1), Version.Version(1, 0, 99)) )
+        invals = ((Version.Version(1, 0, 0), Version.Version(1, 0, 0)),
+                  (Version.Version(1, 2, 0), Version.Version(1, 0, 0)),
+                  (Version.Version(1, 0, 4), Version.Version(1, 0, 0)),
+                  (Version.Version(4, 2, 1), Version.Version(1, 0, 99)))
         real_ans = (False, True, True, True)
         for i, val in enumerate(invals):
             self.assertEqual(real_ans[i], val[0] > val[1])
 
     def test_Version_lt(self):
         """__lt__ should work"""
-        invals = (  (Version.Version(1, 0, 0), Version.Version(1, 0, 0)),
-                        (Version.Version(1, 2, 0), Version.Version(1, 0, 0)),
-                        (Version.Version(1, 0, 4), Version.Version(1, 0, 0)),
-                        (Version.Version(4, 2, 1), Version.Version(5, 0, 0)),
-                        (Version.Version(5, 2, 1), Version.Version(5, 3, 0)),
-                        (Version.Version(5, 0, 1), Version.Version(5, 0, 4)) )
+        invals = ((Version.Version(1, 0, 0), Version.Version(1, 0, 0)),
+                  (Version.Version(1, 2, 0), Version.Version(1, 0, 0)),
+                  (Version.Version(1, 0, 4), Version.Version(1, 0, 0)),
+                  (Version.Version(4, 2, 1), Version.Version(5, 0, 0)),
+                  (Version.Version(5, 2, 1), Version.Version(5, 3, 0)),
+                  (Version.Version(5, 0, 1), Version.Version(5, 0, 4)))
         real_ans = (False, False, False, True, True, True)
         for i, val in enumerate(invals):
             self.assertEqual(real_ans[i], val[0] < val[1])
@@ -114,19 +112,35 @@ class VersionTests(unittest.TestCase):
 
     def test_add(self):
         """__add__ should give known result"""
-        self.assertEqual(Version.Version(1,0,1)+Version.Version(1,0,0), [2,0,1])
+        self.assertEqual(Version.Version(1, 0, 1) + Version.Version(1, 0, 0), [2, 0, 1])
 
     def test_sub(self):
         """__sub__ should give known result"""
-        self.assertEqual(Version.Version(1,0,1)-Version.Version(1,0,0), [0,0,1])
+        self.assertEqual(Version.Version(1, 0, 1) - Version.Version(1, 0, 0), [0, 0, 1])
 
     def test_repr(self):
         """__repr__ has known output"""
-        self.assertEqual(Version.Version(1,0,1).__repr__(), 'Version: 1.0.1')
+        self.assertEqual(Version.Version(1, 0, 1).__repr__(), 'Version: 1.0.1')
 
     def test_fromString(self):
         """fromString"""
-        self.assertEqual(Version.Version(1,0,1), Version.Version.fromString('1.0.1'))
+        self.assertEqual(Version.Version(1, 0, 1), Version.Version.fromString('1.0.1'))
+
+    def test_extract_Version(self):
+        """extract_Version works"""
+        self.assertEqual(Version.Version(1, 0, 0),
+                         Version.Version.extract_Version('rbspa_pre_ect-hope-L1_20130231_v1.0.0.cdf'))
+        self.assertEqual(Version.Version(1, 0, 0),
+                         Version.Version.extract_Version('rbspa_pre_ect-hope-L1_20130202_v1.0.0.cdf'))
+        self.assertEqual(Version.Version(1, 10, 0),
+                         Version.Version.extract_Version('rbspa_pre_ect-hope-L1_20130202_v1.10.0.cdf'))
+        self.assertEqual(None, Version.Version.extract_Version('rbspa_pre_ect-hope-L1_20130202_v1.f.0.cdf'))
+        self.assertEqual(None, Version.Version.extract_Version('rbspa_pre_ect-hope-L1_20130202_v1.0.cdf'))
+
+    def test_extract_Version_1(self):
+        """extract_Version works"""
+        self.assertEqual((Version.Version(1, 0, 0), 'rbspa_pre_ect-hope-L1_20130231_'),
+                         Version.Version.extract_Version('rbspa_pre_ect-hope-L1_20130231_v1.0.0.cdf', basename=1))
 
 
 if __name__ == "__main__":

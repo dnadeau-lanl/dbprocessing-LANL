@@ -1,5 +1,7 @@
 from __future__ import division
 
+import re
+
 """
 Module to handle version information of files and codes.
 
@@ -176,3 +178,28 @@ class Version(object):
 
     def __add__(self, other):
         return [self.interface + other.interface, self.quality + other.quality, self.revision + other.revision]
+
+    @staticmethod
+    def extract_Version(filename, basename=False):
+        """
+        go through the filename and pull out the fist valid vX.Y.Z and return as a
+        Version object
+        @type basename: bool
+        @type filename: str
+        @param filename: filename to parse
+        @param basename: if True also return basename
+        @return:
+        """
+        res = re.search("[vV]\d+\.\d+\.\d+\.", filename)
+        ver = None
+        base = None
+        if res:
+            verstring = res.group()
+            tmp = verstring.split('.')
+            ver = Version(tmp[0][1:], tmp[1], tmp[2])
+
+        if not basename:
+            return ver
+        else:
+            base = filename.split(verstring)[0]
+            return ver, base

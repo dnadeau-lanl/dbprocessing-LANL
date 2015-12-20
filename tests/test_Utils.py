@@ -127,6 +127,29 @@ class UtilsTests(unittest.TestCase):
         # TODO is there a smarter way to do this that can never be running?
         self.assertFalse(Utils.processRunning(655434))
 
+    def test_extract_YYYYMMDD(self):
+        """extract_YYYYMMDD works"""
+        self.assertEqual(datetime.datetime(2013, 2, 14, 0, 0),
+                         Utils.extract_YYYYMMDD('rbspa_pre_ect-hope-L1_20130214_v1.0.0.cdf'))
+        self.assertEqual(None, Utils.extract_YYYYMMDD('rbspa_pre_ect-hope-L1_20130231_v1.0.0.cdf'))
+        self.assertEqual(None, Utils.extract_YYYYMMDD('rbspa_pre_ect-hope-L1_19520201_v1.0.0.cdf'))
+        self.assertEqual(None, Utils.extract_YYYYMMDD('rbspa_pre_ect-hope-L1_20510201_v1.0.0.cdf'))
+
+    def test_valid_YYYYMMDD(self):
+        """valid_YYYYMMDD works"""
+        self.assertTrue(Utils.valid_YYYYMMDD('20121212'))
+        self.assertTrue(Utils.valid_YYYYMMDD('20120229'))
+        self.assertFalse(Utils.valid_YYYYMMDD('20120230'))
+
+    def test_extract_YYYYMM(self):
+        """extract_YYYYMMDD works"""
+        self.assertEqual(datetime.date(2013, 2, 1),
+                         Utils.extract_YYYYMM('rbspa_pre_ect-hope-L1_201302_v1.0.0.cdf'))
+        self.assertEqual(datetime.date(2013, 2, 1),
+                         Utils.extract_YYYYMM('rbspa_pre_ect-hope-L1_20130214_v1.0.0.cdf'))
+        self.assertEqual(None, Utils.extract_YYYYMM('rbspa_pre_ect-hope-L1_205102_v1.0.0.cdf'))
+        self.assertEqual(None, Utils.extract_YYYYMM('rbspa_pre_ect-hope-L1_205_v1.0.0.cdf'))
+
 
 if __name__ == "__main__":
     unittest.main()

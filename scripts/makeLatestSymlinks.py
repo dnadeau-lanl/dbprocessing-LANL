@@ -18,6 +18,8 @@ import warnings
 
 from dateutil import parser as dup
 
+import Utils
+import Version
 from dbprocessing import inspector
 
 
@@ -49,7 +51,7 @@ def getBaseVersion(f):
     given an input filename return a tuple of base an version
     """
     base = re.split(r'v\d\d?\.\d\d?\.\d\d?\.', f)[0]
-    version = inspector.extract_Version(f)
+    version = Version.extract_Version(f)
     return base, version
 
 def cull_to_newest(files, options=None):
@@ -86,9 +88,9 @@ def cull_to_dates(files, startdate, enddate, nodate=False, options=None):
     if nodate:
         return files
     for f in files:
-        date = inspector.extract_YYYYMMDD(f)
+        date = Utils.extract_YYYYMMDD(f)
         if not date:
-            date = inspector.extract_YYYYMM(f)
+            date = Utils.extract_YYYYMM(f)
         else:
             date = date.date()
         if not date:

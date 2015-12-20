@@ -6,6 +6,7 @@ Class to hold random utilities of use throughout this code
 import collections
 import datetime
 import os
+import re
 import sys
 
 import dateutil.rrule  # do this long so where it is from is remembered
@@ -203,4 +204,73 @@ def processRunning(pid):
     except OSError:
         return False
     else:
+        return True
+
+
+def extract_YYYYMMDD(filename):
+    """
+    go through the filename and extract the first valid YYYYMMDD as a datetime
+
+    Parameters
+    ==========
+    filename : str
+        filename to parse for a YYYYMMDD format
+
+    Returns
+    =======
+    out : (None, datetime.datetime)
+        the datetime found in the filename or None
+    """
+    # cmp = re.compile("[12][90]\d2[01]\d[0-3]\d")
+    # return a datetime if there is one from YYYYMMDD
+    try:
+        dt = datetime.datetime.strptime(re.search("[12][90]\d\d[01]\d[0-3]\d", filename).group(), "%Y%m%d")
+    except (ValueError, AttributeError):  # there is not one
+        return None
+    if dt < datetime.datetime(1957, 10, 4, 19, 28, 34):  # Sputnik 1 launch datetime
+        dt = None
+    # better not still be using this... present to help with random numbers combinations
+    elif dt > datetime.datetime(2050, 1, 1):
+        dt = None
+    return dt
+
+
+def extract_YYYYMM(filename):
+    """
+    go through the filename and extract the first valid YYYYMM as a datetime.date
+
+    Parameters
+    ==========
+    filename : str
+        filename to parse for a YYYYMMDD format
+
+    Returns
+    =======
+    out : (None, datetime.datetime)
+        the datetime found in the filename or None
+    """
+    # cmp = re.compile("[12][90]\d2[01]\d[0-3]\d")
+    # return a datetime if there is one from YYYYMMDD
+    try:
+        dt = datetime.datetime.strptime(re.search("[12][90]\d\d[01]\d", filename).group(), "%Y%m")
+    except (ValueError, AttributeError):  # there is not one
+        return None
+    # better not still be using this... present to help with random numbers combinations
+    if dt > datetime.datetime(2050, 1, 1):
+        return None
+    return dt.date()
+
+
+def valid_YYYYMMDD(inval):
+    """
+    if inval is valid YYYYMMDD return True, False otherwise
+    @type inval: str
+    @param inval: string to parse
+    @return: bool
+    """
+    try:
+        ans = datetime.datetime.strptime(inval, "%Y%m%d")
+    except ValueError:
+        return False
+    if isinstance(ans, datetime.datetime):
         return True

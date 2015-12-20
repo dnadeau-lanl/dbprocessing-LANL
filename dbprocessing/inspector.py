@@ -34,30 +34,33 @@ inspector requirements:
 inspector suggestions:
 """
 
-from abc import ABCMeta, abstractmethod
 import datetime
 import os
-import re
+from abc import ABCMeta, abstractmethod
 
-import DBlogging
-import Diskfile
-import Version
+from . import DBlogging
+from . import Diskfile
+from . import Utils
+
 
 def EphemeralCallable(basetype=type):
     def _new_caller(cls, *args, **kwargs):
         return cls.__ephemeral_encapsulated__(*args, **kwargs)()
+
     class _EphemeralMetaclass(basetype):
         def __new__(cls, name, bases, dct):
             encbases = tuple([b.__ephemeral_encapsulated__
                               if hasattr(b, '__ephemeral_encapsulated__')
                               else b for b in bases])
             encaps = super(_EphemeralMetaclass, cls).__new__(
-                cls, '_' + name + '_ephemeral_encapsulated', encbases, dct)
+                    cls, '_' + name + '_ephemeral_encapsulated', encbases, dct)
             return super(_EphemeralMetaclass, cls).__new__(
-                cls, name, bases,
-                {'__new__': _new_caller,
-                 '__ephemeral_encapsulated__': encaps})
+                    cls, name, bases,
+                    { '__new__': _new_caller,
+                      '__ephemeral_encapsulated__': encaps })
+
     return _EphemeralMetaclass
+
 
 class inspector(object):
     """
@@ -68,7 +71,7 @@ class inspector(object):
 
     def __init__(self, filename, dbu, product, **kwargs):
         DBlogging.dblogger.debug("Entered inspector {0} with kwargs: {1}".format(self.code_name, kwargs))
-        self.dbu = dbu # give us access to DBUtils
+        self.dbu = dbu  # give us access to DBUtils
         self.filename = filename
         self.basename = os.path.basename(self.filename)
         self.dirname = os.path.dirname(self.filename)
@@ -94,15 +97,18 @@ class inspector(object):
         """
         ptb = self.dbu.getTraceback('Product', self.product)
         self.diskfile.mission = ptb['mission'].mission_name
-        self.diskfile.params['file_create_date'] = datetime.datetime.fromtimestamp(os.path.getmtime(self.diskfile.infile))
+        self.diskfile.params['file_create_date'] = datetime.datetime.fromtimestamp(
+            os.path.getmtime(self.diskfile.infile))
         self.diskfile.params['exists_on_disk'] = True  # we are parsing it so it exists_on_disk
         self.diskfile.params['shasum'] = Diskfile.calcDigest(self.diskfile.infile)
         self.diskfile.params['product_id'] = self.product
         if self.diskfile.params['data_level'] is not None:
-            DBlogging.dblogger.info("Inspector {0}:  set level to {1}, this is ignored and set by the product definition".format(self.code_name, self.diskfile.params['data_level']))
-            print("Inspector {0}:  set level to {1}, this is ignored and set by the product definition".format(self.code_name, self.diskfile.params['data_level']))
+            DBlogging.dblogger.info(
+                "Inspector {0}:  set level to {1}, this is ignored and set by the product definition".format(
+                    self.code_name, self.diskfile.params['data_level']))
+            print("Inspector {0}:  set level to {1}, this is ignored and set by the product definition".format(
+                self.code_name, self.diskfile.params['data_level']))
         self.diskfile.params['data_level'] = self.dbu.getEntry('Product', self.product).level
-
 
     def __call__(self):
         """
@@ -123,130 +129,50 @@ class inspector(object):
             DBlogging.dblogger.debug("Inspector {0}:  self.diskfile.params['filename'] is None".format(self.code_name))
         elif self.diskfile.params['utc_file_date'] is None:
             match = None
-            DBlogging.dblogger.debug("Inspector {0}:  self.diskfile.params['utc_file_date'] is None".format(self.code_name))
+            DBlogging.dblogger.debug(
+                "Inspector {0}:  self.diskfile.params['utc_file_date'] is None".format(self.code_name))
         elif self.diskfile.params['utc_start_time'] is None:
             match = None
-            DBlogging.dblogger.debug("Inspector {0}:  self.diskfile.params['utc_start_time'] is None".format(self.code_name))
+            DBlogging.dblogger.debug(
+                "Inspector {0}:  self.diskfile.params['utc_start_time'] is None".format(self.code_name))
         elif self.diskfile.params['utc_stop_time'] is None:
             match = None
-            DBlogging.dblogger.debug("Inspector {0}:  self.diskfile.params['utc_stop_time'] is None".format(self.code_name))
+            DBlogging.dblogger.debug(
+                "Inspector {0}:  self.diskfile.params['utc_stop_time'] is None".format(self.code_name))
         elif self.diskfile.params['data_level'] is None:
             match = None
-            DBlogging.dblogger.debug("Inspector {0}:  self.diskfile.params['data_level'] is None".format(self.code_name))
+            DBlogging.dblogger.debug(
+                "Inspector {0}:  self.diskfile.params['data_level'] is None".format(self.code_name))
         elif self.diskfile.params['file_create_date'] is None:
             match = None
-            DBlogging.dblogger.debug("Inspector {0}:  self.diskfile.params['file_create_date'] is None".format(self.code_name))
+            DBlogging.dblogger.debug(
+                "Inspector {0}:  self.diskfile.params['file_create_date'] is None".format(self.code_name))
         elif self.diskfile.params['exists_on_disk'] is None:
             match = None
-            DBlogging.dblogger.debug("Inspector {0}:  self.diskfile.params['exists_on_disk'] is None".format(self.code_name))
+            DBlogging.dblogger.debug(
+                "Inspector {0}:  self.diskfile.params['exists_on_disk'] is None".format(self.code_name))
         elif self.diskfile.params['product_id'] is None:
             match = None
-            DBlogging.dblogger.debug("Inspector {0}:  self.diskfile.params['product_id'] is None".format(self.code_name))
+            DBlogging.dblogger.debug(
+                "Inspector {0}:  self.diskfile.params['product_id'] is None".format(self.code_name))
         elif self.diskfile.params['version'] is None:
             match = None
             DBlogging.dblogger.debug("Inspector {0}:  self.diskfile.params['version'] is None".format(self.code_name))
 
         if match is None:
-            DBlogging.dblogger.debug("No match found for inspector {0}: {1}".format(self.code_name, self.diskfile.filename))
+            DBlogging.dblogger.debug(
+                "No match found for inspector {0}: {1}".format(self.code_name, self.diskfile.filename))
         else:
             DBlogging.dblogger.info("Match found for inspector {0}: {1}".format(self.code_name, self.diskfile.filename))
         return match
 
-    #==============================================================================
+    # ==============================================================================
     # Helper routines
-    #==============================================================================
+    # ==============================================================================
     def extract_YYYYMMDD(self):
         """
         go through the filename and extract the first valid YYYYMMDD as a datetime
         """
-        return extract_YYYYMMDD(self.filename)
-
-
-def extract_YYYYMMDD(filename):
-    """
-    go through the filename and extract the first valid YYYYMMDD as a datetime
-
-    Parameters
-    ==========
-    filename : str
-        filename to parse for a YYYYMMDD format
-
-    Returns
-    =======
-    out : (None, datetime.datetime)
-        the datetime found in the filename or None
-    """
-    # cmp = re.compile("[12][90]\d2[01]\d[0-3]\d")
-    # return a datetime if there is one from YYYYMMDD
-    try:
-        dt = datetime.datetime.strptime(re.search("[12][90]\d\d[01]\d[0-3]\d", filename).group(), "%Y%m%d")
-    except (ValueError, AttributeError): # there is not one
-        return None
-    if dt < datetime.datetime(1957, 10, 4, 19, 28, 34): # Sputnik 1 launch datetime
-        dt = None
-    # better not still be using this... present to help with random numbers combinations
-    elif dt > datetime.datetime(2050, 1, 1):
-        dt = None
-    return dt
-
-def extract_YYYYMM(filename):
-    """
-    go through the filename and extract the first valid YYYYMM as a datetime.date
-
-    Parameters
-    ==========
-    filename : str
-        filename to parse for a YYYYMMDD format
-
-    Returns
-    =======
-    out : (None, datetime.datetime)
-        the datetime found in the filename or None
-    """
-    # cmp = re.compile("[12][90]\d2[01]\d[0-3]\d")
-    # return a datetime if there is one from YYYYMMDD
-    try:
-        dt = datetime.datetime.strptime(re.search("[12][90]\d\d[01]\d", filename).group(), "%Y%m")
-    except (ValueError, AttributeError): # there is not one
-        return None
-    if dt < datetime.datetime(1957, 10, 4, 19, 28, 34): # Sputnik 1 launch datetime
-        dt = None
-    # better not still be using this... present to help with random numbers combinations
-    elif dt > datetime.datetime(2050, 1, 1):
-        dt = None
-    return dt.date()
-
-def valid_YYYYMMDD(inval):
-    """
-    if inval is valid YYYYMMDD return True, False otherwise
-    """
-    try:
-        ans = datetime.datetime.strptime(inval, "%Y%m%d")
-    except ValueError:
-        return False
-    if isinstance(ans, datetime.datetime):
-        return True
-
-def extract_Version(filename, basename=False):
-    """
-    go through the filename and pull out the fist valid vX.Y.Z and return as a
-    Version object
-    """
-    res = re.search("[vV]\d+\.\d+\.\d+\.", filename)
-    ver = None
-    base = None
-    if res:
-        verstring = res.group()
-        tmp = verstring.split('.')
-        ver = Version.Version(tmp[0][1:], tmp[1], tmp[2])
-
-    if not basename:
-        return ver
-    else:
-        base = filename.split(verstring)[0]
-        return ver, base
-
-
-
+        return Utils.extract_YYYYMMDD(self.filename)
 
 
