@@ -7,6 +7,7 @@ import os
 import re
 import subprocess
 
+
 class module(object):
     def __init__(self, *args):
         """
@@ -22,7 +23,7 @@ class module(object):
         mod = module('load', 'icy')
         """
         self.env = os.environ.copy()
-        command = "modulecmd python "+' '.join(args)
+        command = "modulecmd python " + ' '.join(args)
         p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE)
         retval = p.communicate()
         self._parse(retval)
@@ -63,7 +64,3 @@ class module(object):
         """
         m = module(*args)
         return m.env
-
-
-
-

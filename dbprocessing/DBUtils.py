@@ -382,7 +382,7 @@ class DBUtils(object):
         remove a file from the queue by name or number
         """
         # pre prep for a single number or single filename
-        if isinstance(item, int) or hasattr(item, 'lower'): # single number or string type
+        if isinstance(item, int) or hasattr(item, 'lower'):  # single number or string type
             item = [item]
         # loop over item changing each string to a file_id
         for ii, v in enumerate(item):
@@ -2307,4 +2307,3 @@ class DBUtils(object):
         for p in prods:
             tree.append([p.product_id, self._childTree(p.product_id)])
         return tree
-

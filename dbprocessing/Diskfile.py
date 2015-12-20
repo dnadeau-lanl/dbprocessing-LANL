@@ -168,7 +168,8 @@ class Diskfile(object):
         if not self.WRITE_ACCESS:
             DBlogging.dblogger.debug("{0} Access denied!".format(self.infile))
             raise (
-            WriteError("file is not writeable, won't be able to move it to proper location: {0}".format(self.infile)))
+                WriteError(
+                    "file is not writeable, won't be able to move it to proper location: {0}".format(self.infile)))
 
 
 # DBlogging.dblogger.debug("{0} Access Checked out OK".format(self.infile))

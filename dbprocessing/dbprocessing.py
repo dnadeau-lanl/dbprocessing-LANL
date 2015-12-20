@@ -122,7 +122,8 @@ class ProcessQueue(object):
                 shutil.move(fname, os.path.join(path, os.path.basename(fname)))
             except IOError:
                 DBlogging.dblogger.error(
-                    "file {0} was not successfully moved to error".format(os.path.join(path, os.path.basename(fname))))
+                        "file {0} was not successfully moved to error".format(
+                                os.path.join(path, os.path.basename(fname))))
             else:
                 DBlogging.dblogger.info("moveToError {0} moved to {1}".format(fname, path))
 
@@ -240,9 +241,10 @@ class ProcessQueue(object):
                 except:
                     exc_type, exc_value, exc_traceback = sys.exc_info()
                     DBlogging.dblogger.error(
-                        "File {0} inspector threw an exception: {1} {2} {3}".format(filename, str(exc_type), exc_value,
-                                                                                    traceback.print_tb(
-                                                                                        exc_traceback)))  # exc_traceback.tb_lineno))
+                            "File {0} inspector threw an exception: {1} {2} {3}".format(filename, str(exc_type),
+                                                                                        exc_value,
+                                                                                        traceback.print_tb(
+                                                                                                exc_traceback)))  # exc_traceback.tb_lineno))
                     continue  # try the next inspector
             else:
                 try:
@@ -270,7 +272,8 @@ class ProcessQueue(object):
         input_product_id = self.dbu.getInputProductID(process_id)  # this is a list of tuples (id, optional)
 
         DBlogging.dblogger.debug(
-            "Finding input files for file_id:{0} process_id:{1} date:{2}".format(file_id, process_id, utc_file_date))
+                "Finding input files for file_id:{0} process_id:{1} date:{2}".format(file_id, process_id,
+                                                                                     utc_file_date))
 
         ## here decide how we build output and do it.
         timebase = self.dbu.session.query(self.dbu.Process.output_timebase).get(process_id)[0]
@@ -429,7 +432,8 @@ class ProcessQueue(object):
     # TODO can functools.partial help here?
     def reprocessByCode(self, id_in, startDate=None, endDate=None, incVersion=2):
         return (
-        self._reprocessBy(id_in, code=True, prod=False, startDate=startDate, endDate=endDate, incVersion=incVersion))
+            self._reprocessBy(id_in, code=True, prod=False, startDate=startDate, endDate=endDate,
+                              incVersion=incVersion))
 
     def reprocessByProduct(self, id_in, startDate=None, endDate=None, incVersion=None):
         if isinstance(startDate, datetime.datetime):
@@ -493,14 +497,14 @@ class ProcessQueue(object):
         """
         if startDate is not None and endDate is not None and level is None:
             files = self.dbu.session.query(self.dbu.File.file_id).filter(
-                self.dbu.File.utc_file_date >= startDate).filter(self.dbu.File.utc_file_date <= endDate).all()
+                    self.dbu.File.utc_file_date >= startDate).filter(self.dbu.File.utc_file_date <= endDate).all()
         elif startDate is not None and endDate is not None and level is not None:
             files = self.dbu.session.query(self.dbu.File.file_id).filter(
-                self.dbu.File.utc_file_date >= startDate).filter(self.dbu.File.utc_file_date <= endDate).filter(
-                self.dbu.File.data_level == level).all()
+                    self.dbu.File.utc_file_date >= startDate).filter(self.dbu.File.utc_file_date <= endDate).filter(
+                    self.dbu.File.data_level == level).all()
         elif startDate is None and endDate is not None and level is not None:
             files = self.dbu.session.query(self.dbu.File.file_id).filter(self.dbu.File.utc_file_date <= endDate).filter(
-                self.dbu.File.data_level == level).all()
+                    self.dbu.File.data_level == level).all()
         elif startDate is None and endDate is None and level is not None:
             files = self.dbu.session.query(self.dbu.File.file_id).filter(self.dbu.File.data_level == level).all()
         elif startDate is None and endDate is None and level is None:
@@ -511,7 +515,7 @@ class ProcessQueue(object):
             files = self.dbu.session.query(self.dbu.File.file_id).filter(self.dbu.File.utc_file_date <= endDate).all()
         elif startDate is not None and endDate is None and level is not None:
             files = self.dbu.session.query(self.dbu.File.file_id).filter(
-                self.dbu.File.utc_file_date >= startDate).filter(self.dbu.File.data_level == level).all()
+                    self.dbu.File.utc_file_date >= startDate).filter(self.dbu.File.data_level == level).all()
 
         else:
             raise (NotImplementedError("Sorry combination is not implemented"))
