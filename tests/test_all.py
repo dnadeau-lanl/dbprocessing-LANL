@@ -1,6 +1,7 @@
 #!/usr/bin/env python2.6
 
 """Combined unit test suite for all dbprocessing classes"""
+import unittest
 
 from test_DBfile import *
 from test_DBqueue import *
