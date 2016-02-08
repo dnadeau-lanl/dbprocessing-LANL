@@ -376,30 +376,11 @@ class DBUtilsGetTests(TestSetup):
                'ect_rbspb_0377_381_03.ptp.gz',
                'ect_rbspb_0377_381_02.ptp.gz',
                'ect_rbspb_0377_381_01.ptp.gz']
-        self.assertEqual(ans, [v.filename for v in val])
-        val = self.dbu.getFilesByProductDate(187, [datetime.date(2013, 9, 10)] * 2, newest_version=True)
+        self.assertEqual(ans, [v.filename for v in val] )
+        #WARNING: calling newest_version=True returns FILENAME, not DBUtils.File
+        val = self.dbu.getFilesByProductDate(187, [datetime.date(2013, 9, 10)]*2, newest_version=True)
         self.assertEqual(1, len(val))
         self.assertEqual(['ect_rbspb_0377_381_05.ptp.gz'], val)
-
-    def test_getFilesByLevel_1(self):
-        """test getFilesByLevel()"""
-        files = self.dbu.getFilesByLevel(1)
-        self.assertEqual(402, len(files))
-
-    def test_getFilesByLevel_2(self):
-        """test getFilesByLevel()"""
-        files = self.dbu.getFilesByLevel(1, id_only=True)
-        self.assertEqual(402, len(files))
-
-    def test_getFilesByLevel_3(self):
-        """test getFilesByLevel()"""
-        files = self.dbu.getFilesByLevel(2, newest_version=True)
-        self.assertEqual(184, len(files))
-
-    def test_getFilesByLevel_3(self):
-        """test getFilesByLevel()"""
-        files = self.dbu.getFilesByLevel(2, id_only=True, newest_version=True)
-        self.assertEqual(184, len(files))
 
     def test_getFilesByDate(self):
         """getFilesByDate"""
