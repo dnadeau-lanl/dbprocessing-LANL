@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from collections import deque
 
 __version__ = '2.0.3'

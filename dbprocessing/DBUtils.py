@@ -1,3 +1,6 @@
+from __future__ import print_function
+from collections import namedtuple
+
 import datetime
 import glob
 import itertools
@@ -13,12 +16,15 @@ from sqlalchemy import Table
 from sqlalchemy.orm import mapper
 from sqlalchemy.orm import sessionmaker
 
-try:  # new version changed this annoyingly
-    from sqlalchemy.exc import IntegrityError
-    from sqlalchemy.orm.exc import NoResultFound
+try: # new version changed this annoyingly
+    from sqlalchemy.exceptions import IntegrityError
+    from sqlalchemy.exceptions import ArgumentError
+    from sqlalchemy.orm.exceptions import NoResultFound
+except ImportError:
 except ImportError:
     from sqlalchemy.exceptions import IntegrityError
     from sqlalchemy.orm.exceptions import NoResultFound
+    from sqlalchemy.exc import ArgumentError
 from sqlalchemy.sql import func
 from sqlalchemy import and_
 
@@ -67,8 +73,7 @@ class DBUtils(object):
     # create dummy classes with the database names so that code analysis passes
     ################################################
 
-
-    def __init__(self, mission='Test', db_var=None, echo=False):
+    def __init__(self, mission='Test', db_var=None, echo=False, engine='sqlite'):
         """
         @summary: Initialize the DBUtils class, default mission is 'Test'
         """
@@ -92,9 +97,12 @@ class DBUtils(object):
         fmtr = DBStrings.DBFormatter()
         self.format = fmtr.format
         self.re = fmtr.re
-        self._openDB(db_var, echo=echo)
+        self._openDB(db_var=db_var, engine=engine, echo=echo)
         self._createTableObjects()
-        self._patchProcessQueue()
+        try:
+            self._patchProcessQueue()
+        except AttributeError:
+            raise(AttributeError('{0} is not a valid database'.format(mission)))
         self.MissionDirectory = self.getMissionDirectory()
 
     def __del__(self):
@@ -140,7 +148,7 @@ class DBUtils(object):
     ###### DB and Tables ###############
     ####################################
 
-    def _openDB(self, db_var=None, verbose=False, echo=False):
+    def _openDB(self, engine, db_var=None, verbose=False, echo=False):
         """
         setup python to talk to the database, this is where it is, name and password.
         """
@@ -148,25 +156,25 @@ class DBUtils(object):
             return
         try:
             if not os.path.isfile(os.path.expanduser(self.mission)):
-                raise (ValueError("DB file specified doesn't exist"))
-            engine = sqlalchemy.create_engine('sqlite:///' + os.path.expanduser(self.mission), echo=echo)
+                raise(ValueError("DB file specified doesn't exist"))
+            engineIns = sqlalchemy.create_engine('{0}:///{1}'.format(engine, os.path.expanduser(self.mission)), echo=echo)
             self.mission = os.path.realpath(os.path.expanduser(self.mission))
 
-            DBlogging.dblogger.info("Database Connection opened: {0}  {1}".format(str(engine), self.mission))
+            DBlogging.dblogger.info("Database Connection opened: {0}  {1}".format(str(engineIns), self.mission))
 
-        except DBError:
+        except (DBError, ArgumentError):
             (t, v, tb) = sys.exc_info()
             raise (DBError('Error creating engine: ' + str(v)))
         try:
-            metadata = sqlalchemy.MetaData(bind=engine)
+            metadata = sqlalchemy.MetaData(bind=engineIns)
             # a session is what you use to actually talk to the DB, set one up with the current engine
-            Session = sessionmaker(bind=engine)
+            Session = sessionmaker(bind=engineIns)
             session = Session()
-            self.engine = engine
+            self.engine = engineIns
             self.metadata = metadata
             self.session = session
             self.dbIsOpen = True
-            if verbose: print("DB is open: {0}".format(engine))
+            if verbose: print("DB is open: %s" % (engineInsR))
             return
         except Exception as msg:
             raise (DBError('Error opening database: {0}'.format(msg)))
@@ -418,7 +426,7 @@ class DBUtils(object):
         DBlogging.dblogger.debug("Entire Processqueue was read: {0} elements returned".format(len(ans)))
         return ans
 
-    def _processqueuePush(self, fileid, version_bump=None, max_add=150):
+    def _processqueuePush(self, fileid, version_bump=None, MAX_ADD=150):
         """
         push a file onto the process queue (onto the right)
 
@@ -437,9 +445,9 @@ class DBUtils(object):
             fileid = [fileid]
         else:
             # do this in chunks as too many entries breaks things
-            if len(fileid) > max_add:
+            if len(fileid) > MAX_ADD:
                 outval = []
-                for v in Utils.chunker(fileid, max_add):
+                for v in Utils.chunker(fileid, MAX_ADD):
                     outval.extend(self._processqueuePush(v, version_bump=version_bump))
                 return outval
 
@@ -2027,7 +2035,7 @@ class DBUtils(object):
 
         this is some large select statements with joins in them, these are tested and do work
         """
-        retval = { }
+        retval = {}
         if table.capitalize() == 'File':
             vars = ['file', 'product', 'inspector', 'instrument',
                     'instrumentproductlink', 'satellite', 'mission']

@@ -4,6 +4,9 @@ Created on Tue Oct 23 10:12:11 2012
 
 @author: balarsen
 """
+from __future__ import print_function
+
+from collections import namedtuple
 import datetime
 import glob
 import os

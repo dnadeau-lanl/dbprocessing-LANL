@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.6
+from __future__ import print_function
 
 import datetime
 import os
@@ -149,6 +150,26 @@ class UtilsTests(unittest.TestCase):
                          Utils.extract_YYYYMM('rbspa_pre_ect-hope-L1_20130214_v1.0.0.cdf'))
         self.assertEqual(None, Utils.extract_YYYYMM('rbspa_pre_ect-hope-L1_205102_v1.0.0.cdf'))
         self.assertEqual(None, Utils.extract_YYYYMM('rbspa_pre_ect-hope-L1_205_v1.0.0.cdf'))
+
+    def test_strargs_to_args1(self):
+        """strargs_to_args"""
+        self.assertTrue(Utils.strargs_to_args(None) is None)
+
+    def test_strargs_to_args2(self):
+        """strargs_to_args"""
+        self.assertEqual(Utils.strargs_to_args('--arg1=arg'), { '--arg1': 'arg' })
+
+    def test_strargs_to_args3(self):
+        """strargs_to_args"""
+        self.assertEqual(Utils.strargs_to_args(['--arg1=arg', '--arg2=arg2']), { '--arg1': 'arg', '--arg2': 'arg2' })
+
+    def test_strargs_to_args4(self):
+        """strargs_to_args"""
+        self.assertEqual(Utils.strargs_to_args(['--arg2=arg2']), { '--arg2': 'arg2' })
+
+    def test_strargs_to_args5(self):
+        """strargs_to_args"""
+        self.assertEqual(Utils.strargs_to_args('--arg'), { })
 
 
 if __name__ == "__main__":
