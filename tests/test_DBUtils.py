@@ -35,7 +35,7 @@ def remove_tmpfile(fname):
 
 
 class TestSetup(unittest.TestCase):
-    """©
+    """
     master class for the setup and teardown
     """
 
@@ -138,7 +138,6 @@ class DBUtilsOtherTests(TestSetup):
         file_id = 123356
         self.assertRaises(DBUtils.DBNoData, self.dbu.getFileID, file_id)
         self.dbu._purgeFileFromDB(file_id)
->>>>>>> master
 
     def test_nameSubProduct(self):
         """_nameSubProduct"""
@@ -727,7 +726,6 @@ class ProcessqueueTests(TestSetup):
         self.assertEqual(0, self.dbu.Processqueue.len())
         self.assertFalse(self.dbu.Processqueue.getAll())
         self.assertFalse(self.dbu.Processqueue.getAll(version_bump=True))
->>>>>>> master
 
     def test_pq_flush(self):
         """test self.Processqueue.flush"""
