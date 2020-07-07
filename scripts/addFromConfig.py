@@ -58,6 +58,8 @@ def readconfig(config_filepath):
     cfg = ConfigParser.SafeConfigParser()
     cfg.read(config_filepath)
     sections = cfg.sections()
+    import pdb
+    pdb.set_trace()
     # Read each parameter in turn
     ans = { }
     for section in sections:
@@ -175,12 +177,14 @@ def _fileTest(filename):
         raise (ValueError('Specified section(s): "{0}" is repeated!'.format(seen_twice)))
 
 
-def addStuff(cfg, options):
+def addStuff(cfg, options, instrument):
     # setup the db
-    dbu = DButils.DButils(options.mission)
+    dbu = DButils.DButils(options.mission, instrument)
     # is the mission in the DB?  If not add it
     if cfg['mission']['mission_name'] not in dbu.getMissions():  # was it there?
         # add it
+        import pdb
+        pdb.set_trace()
         mission_id = dbu.addMission(**cfg['mission'])
         print('Added Mission: {0} {1}'.format(mission_id, dbu.getEntry('Mission', mission_id).mission_name))
     else:
@@ -206,7 +210,7 @@ def addStuff(cfg, options):
         print(
             'Found Instrument: {0} {1}'.format(instrument_id,
                                                dbu.getEntry('Instrument', instrument_id).instrument_name))
-    except (DButils.DBNoData, ValueError, NoResultFound):
+    except (DButils.DBNoData, ValueError, AttributeError, NoResultFound):
         # add it
         instrument_id = dbu.addInstrument(satellite_id=satellite_id, **cfg['instrument'])
         print(
@@ -215,6 +219,8 @@ def addStuff(cfg, options):
 
     # loop over all the products, check if they are there and add them if not
     products = [k for k in cfg if k.startswith('product')]
+    import pdb
+    pdb.set_trace()
     db_products = [v.product_name for v in dbu.getAllProducts()]
     for p in products:
         # is the product in the DB?  If not add it
@@ -269,12 +275,14 @@ def addStuff(cfg, options):
             # now add the productprocesslink
             tmp = dict((k, cfg[p][k]) for k in cfg[p] if 'input' in k)
             for k in tmp:
-                ppl = dbu.addproductprocesslink(cfg[tmp[k][0]]['product_id'], p_id, 'optional' in k, tmp[k][1], tmp[k][2])
+                ppl = dbu.addproductprocesslink(cfg[tmp[k][0]]['product_id'], p_id, 'optional' in k) 
                 print('Added Productprocesslink: {0}'.format(ppl))
 
             # if the process was not there we will assume the code is not either (requires a process_id)
             tmp = dict((k, cfg[p][k]) for k in cfg[p] if k.startswith('code'))
 
+            import pdb
+            pdb.set_trace()
             replace_dict = { 'code_filename': 'filename',
                              'code_arguments': 'arguments',
                              'code_relative_path': 'relative_path',
@@ -335,18 +343,22 @@ if __name__ == "__main__":
         # recheck the temp file
         conf = readconfig(tmpf.name)
         configCheck(conf)
+        ### The following is commented out as a Postgres database is implemented.
         # do all our work on a temp version of the DB, if it all works, move tmp on top of existing
         #   if it fails just delete the tmp and do nothing
-        orig_db = options.mission
-        tmp_db = tempfile.NamedTemporaryFile(delete=False, suffix='_temp_db')
-        tmp_db.file.writelines(cfg)
-        tmp_db.close()
-        shutil.copy(orig_db, tmp_db.name)
-        options.mission = tmp_db.name
+        # orig_db = options.mission
+        # tmp_db = tempfile.NamedTemporaryFile(delete=False, suffix='_temp_db')
+        # tmp_db.file.writelines(cfg)
+        # tmp_db.close()
+        # shutil.copy(orig_db, tmp_db.name)
+        # options.mission = tmp_db.name
         try:
-            addStuff(conf, options)
-            shutil.copy(tmp_db.name, orig_db)
+            import pdb
+            pdb.set_trace()
+            addStuff(conf, options, INSTRUMENT)
+            # shutil.copy(tmp_db.name, orig_db)
         finally:
-            os.remove(tmp_db.name)
+            pass
+            # os.remove(tmp_db.name)
     finally:
         os.remove(tmpf.name)

@@ -14,6 +14,7 @@ from dbprocessing import runMe, Utils
 from runMe import ProcessException
 #from dbprocessing.Utils import dateForPrinting as DFP
 from Utils import dateForPrinting as DFP
+debug=1
 
 #import __version__
 

@@ -4,10 +4,7 @@ Class to hold random utilities of use throughout this code
 """
 from __future__ import print_function
 
-try:
-    import ConfigParser
-except ImportError:
-    import configparser as ConfigParser
+import ConfigParser
 import collections
 import datetime
 import os
@@ -16,7 +13,7 @@ import sys
 
 import dateutil.rrule  # do this long so where it is from is remembered
 
-from . import Version
+import Version
 
 
 def datetimeToDate(dt):
@@ -303,7 +300,7 @@ def dirSubs(path, filename, utc_file_date, utc_start_time, version, dbu=None):
     :param dbu: Pass in the current :class:`.DButils` session so that a new connection is not made
     :type dbu: :class:`.DButils`
     """
-    if '{INSTRUMENT}' in path or '{SATELLITE}' in path or '{SPACECRAFT}' in path or '{MISSION}' in path or '{PRODUCT}' in path:
+    if '{INSTRUMENT}' in path or '{SATELLITE}' in path or '{SPACECRAFT}' in path or '{MISSION}' in path or '{PRODUCT}' in path or '{IRON}' in path:
         ftb = dbu.getTraceback('File', filename)
         if '{INSTRUMENT}' in path:  # need to replace with the instrument name
             path = path.replace('{INSTRUMENT}', ftb['instrument'].instrument_name)
@@ -315,6 +312,9 @@ def dirSubs(path, filename, utc_file_date, utc_start_time, version, dbu=None):
             path = path.replace('{MISSION}', ftb['mission'].mission_name)
         if '{PRODUCT}' in path:
             path = path.replace('{PRODUCT}', ftb['product'].product_name)
+        if '{IRON}' in path:
+            iron=filename.split('.')[0]
+            path = path.replace('{IRON}', iron.split('-')[1])
 
     if '{Y}' in path:
         path = path.replace('{Y}', utc_file_date.strftime('%Y'))
